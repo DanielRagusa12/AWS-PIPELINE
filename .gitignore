@@ -1,0 +1,3 @@
+lambda/aws-creds.env
+lambda/lambdaDailyFetch/env
+lambda/lambdaDailyFetch/lambdaDailyFetch.zip

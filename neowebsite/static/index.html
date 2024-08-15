@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO Data</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@v0.167.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.167.0/examples/jsm/"
+          }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Today's Close Approach NEO Data</h1>
+        <h2 class="neo-title" id="fetchDate"></h2>
+        <h3 class="neo-count" id="neoCount">Count: </h3>
+        <div class="legend">
+            <ul>
+                <li><span class="color-box reference-color"></span> Statue of Liberty</li>
+                <li><span class="color-box neo-color"></span> Near Earth Object (NEO)</li>
+            </ul>
+        </div>
+        <div id="neo-data-container"></div>
+    </div>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
