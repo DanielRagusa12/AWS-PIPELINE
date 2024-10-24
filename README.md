@@ -4,7 +4,7 @@
 
 This project is designed to fetch, process, and visualize today's close approach Near-Earth Object (NEO) data. A NEO's close approach date indicates the day it will be the closest to the Earth in its orbit. The primary focus is on leveraging AWS cloud services to build a scalable and efficient data pipeline. The project also includes a frontend component for visualizing the processed data, providing a clear demonstration of the technical pipeline from data acquisition to end-user presentation.
 
-You can view the project here: [NEO Data Visualization](https://aws-pipeline.vercel.app/)
+You can view the project here: [NEO Data Visualization](https://aws-pipeline.vercel.app/) **<span style="color: red;">(Best experienced on Firefox-based browsers)</span>**. [Click here to read more](#browser-recommendation).
 
 ## Architecture
 
@@ -49,9 +49,6 @@ You can view the project here: [NEO Data Visualization](https://aws-pipeline.ver
 - **Dynamic Data Querying**: The Lambda API allows the frontend to query the DynamoDB database in real-time, ensuring that users always see the most current data.
 
 ## Additional Notes
- - There are performance issues on Chrome that I will try to address in the future. For now use Firefox or Edge for the best experience.
 
-
-
-
-
+### Browser Recommendation
+There are performance issues on Chromium-based browsers that I will try to address in the future. For now, **Firefox-based browsers** will provide the best experience.
