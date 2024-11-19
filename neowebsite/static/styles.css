@@ -86,15 +86,7 @@ ul, ol {
     background-color: #cc00ff; /* Reference color */
 }
 
-.neo-entry {
-    display: flex;
-    flex-wrap: wrap; /* Allow items to wrap on small screens */
-    align-items: stretch;
-    margin: 0 auto 50px auto; /* Center the content */
-    gap: 20px;
-    max-width: 1200px; /* Limit maximum width */
-    width: 100%; /* Allow full width on smaller screens */
-}
+
 
 
 
@@ -102,25 +94,37 @@ ul, ol {
     margin-top: 150px; /* Adds extra space above the first NEO box */
 }
 
-.neo-info {
-    position: relative;
-    flex: 0 1 30%; /* Adjusted flex property */
-    min-width: 300px; /* Optional minimum width */
-    border: 1px solid rgba(255, 255, 255, 0);
-    height: auto;
-    box-sizing: border-box;
-    padding: 20px;
-    word-wrap: break-word; /* Ensure content wraps */
+.neo-entry {
+    display: flex;
+    flex-direction: row; /* Keep items side by side */
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
-.neo-visual {
-    position: relative;
-    flex: 1 1 0; /* Adjusted flex property */
-    min-width: 300px;
-    border: 1px solid rgba(255, 255, 255, 0);
-    height: auto;
+.neo-info {
+    flex: 0 0 35%; /* Fixed width at 35% */
+    max-width: 35%;
+    min-width: 0;
+    padding: 50px;
+    font-size: 1em;
     box-sizing: border-box;
-    padding: 20px;
+    border: none;
+}
+
+
+.neo-visual {
+    flex: 1 1 65%; /* Take up remaining 65% */
+    max-width: 100%; /* Allow it to grow to full width */
+    min-width: 0;
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    box-sizing: border-box;
+    border: none;
+    /* Offset parent's padding using negative margin */
+    margin-right: -20px; /* Adjust based on parent's padding */
 }
 
 
@@ -180,33 +184,41 @@ canvas {
         border-radius: 5px;
     }
 
-    /* .neo-info,
-    .neo-visual {
-        flex: 1;
-        min-width: 0; 
-        padding: 10px; 
-        font-size: 0.4em;
-        box-sizing: border-box;
-    } */
+    
+
+    .neo-entry {
+        display: flex;
+        flex-direction: row; /* Keep items side by side */
+        flex-wrap: nowrap;
+        align-items: stretch;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
 
     .neo-info {
-        flex: 0 1 35%; /* Adjusted flex property */
-        min-width: 0; 
-        padding: 10px; /* Reduce padding on smaller screens */
+        flex: 0 0 35%; /* Fixed width at 35% */
+        max-width: 35%;
+        min-width: 0;
+        padding: 10px;
         font-size: 0.5em;
         box-sizing: border-box;
-        border: 1px solid rgba(255, 255, 255, 0);
+        border: none;
     }
+
 
     .neo-visual {
-        flex: 1;
-        min-width: 0; 
-        padding: 10px; /* Reduce padding on smaller screens */
+        flex: 1 1 65%; /* Take up remaining 65% */
+        max-width: 100%; /* Allow it to grow to full width */
+        min-width: 0;
+        padding: 0; /* Remove padding */
+        margin: 0; /* Remove margin */
         box-sizing: border-box;
-        border: 1px solid rgba(255, 255, 255, 0);
-
-
+        border: none;
+        /* Offset parent's padding using negative margin */
+        margin-right: -20px; /* Adjust based on parent's padding */
     }
+
 
     .title,
     .neo-title,
