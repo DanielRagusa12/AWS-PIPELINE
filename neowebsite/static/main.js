@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const neoEntry = createNeoEntry(neo);
                     neoContainer.appendChild(neoEntry);
                     addIrregularShapes(neo);
+                    
                 });
             } else {
                 console.error("No NEO Data found");
@@ -99,6 +100,18 @@ document.addEventListener("DOMContentLoaded", function() {
         neoVisual.id = `visual-${neo.neo_id}`;
         neoEntry.appendChild(neoVisual);
 
+        const toggleButton = document.createElement('button');
+        toggleButton.classList.add('toggle-button');
+        toggleButton.textContent = 'Toggle Visualization';
+        toggleButton.setAttribute('data-neo-id', neo.neo_id);
+
+        // neoVisual.appendChild(toggleButton);
+
+        neoEntry.appendChild(neoVisual);
+
+
+
+
         return neoEntry;
     }
 
@@ -106,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const container = document.getElementById(`visual-${neo.neo_id}`);
         if (!container) return;
     
-        const scaleFactor = 700;  // Adjusted scale factor
+        const scaleFactor = 400;  // Adjusted scale factor
         const statueHeightMeters = 93;
         const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
         const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
