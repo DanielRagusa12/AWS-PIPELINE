@@ -161,10 +161,12 @@ canvas {
 
 @media (max-width: 768px) {
     body {
-        background-size: contain;
+        background-size: cover;
         background-position: center top;
         background-attachment: scroll;
     }
+
+    
     
     .neo-entry:first-of-type {
         margin-top: 50px; /* Adds extra space above the first NEO box */
