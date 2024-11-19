@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const container = document.getElementById(`visual-${neo.neo_id}`);
         if (!container) return;
 
-        const scaleFactor = isMobileDevice() ? 700 : 400; // Adjust scale factors as needed
+        const scaleFactor = isMobileDevice() ? 600 : 400; // Adjust scale factors as needed
         const statueHeightMeters = 93;
         const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
         const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
