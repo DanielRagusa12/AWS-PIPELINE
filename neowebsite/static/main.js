@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
     
@@ -199,10 +200,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const camera = cameras[neo.neo_id];
             const renderer = renderers[neo.neo_id];
             if (container && scene && camera && renderer) {
+                // Update pixel ratio
+                renderer.setPixelRatio(window.devicePixelRatio);
                 renderer.setSize(container.clientWidth, container.clientHeight);
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
             }
         });
-    });
+    });   
 });
