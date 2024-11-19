@@ -15,10 +15,16 @@ canvas {
     height: auto !important;
 }
 
+ul, ol {
+    padding: 0;
+    margin: 5%;
+}
+
+
 
 .neo-title, .title, .neo-count {
     text-align: center;
-    font-size: 2em;
+    font-size: 1.7em;
     color: white;
     margin-top: 20px;
 }
@@ -33,7 +39,7 @@ canvas {
     max-height: none; /* Allow content to expand */
     padding: 20px;
     box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.8);
     overflow-y: auto;
     font-size: 1.1em;
 }
@@ -42,6 +48,7 @@ canvas {
 .legend {
     text-align: center;
     margin-bottom: 20px;
+    font-size: 1.4em;
 }
 
 .legend h3 {
@@ -58,18 +65,13 @@ canvas {
     margin-right: 20px;
 }
 
-@media (max-width: 768px) {
-    .legend li {
-        display: block; /* Stack items vertically */
-        margin-right: 0;
-    }
-}
+
 
 
 .color-box {
     display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     margin-right: 5px;
     border-radius: 5px;
 }
@@ -95,19 +97,33 @@ canvas {
 
 
 .neo-entry:first-of-type {
-    margin-top: 200px; /* Adds extra space above the first NEO box */
+    margin-top: 150px; /* Adds extra space above the first NEO box */
 }
 
-.neo-info,
+.neo-info {
+    position: relative;
+    flex: 0 1 30%; /* Adjusted flex property */
+    min-width: 300px; /* Optional minimum width */
+    border: 1px solid rgba(255, 255, 255, 0);
+    height: auto;
+    box-sizing: border-box;
+    padding: 20px;
+    word-wrap: break-word; /* Ensure content wraps */
+}
+
 .neo-visual {
-    position: relative; /* Set relative positioning to position the button inside */
-    flex: 1 1 400px;
+    position: relative;
+    flex: 1 1 0; /* Adjusted flex property */
     min-width: 300px;
-    border: 1px solid white;
+    border: 1px solid rgba(255, 255, 255, 0);
     height: auto;
     box-sizing: border-box;
     padding: 20px;
 }
+
+
+
+
 
 /* Style for the toggle button */
 .toggle-button {
@@ -142,20 +158,51 @@ canvas {
 }
 
 @media (max-width: 768px) {
-    .neo-entry {
-        flex-direction: column; /* Stack elements vertically */
+    .neo-entry:first-of-type {
+        margin-top: 50px; /* Adds extra space above the first NEO box */
     }
 
-    .neo-info,
+    .color-box {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        margin-right: 5px;
+        border-radius: 5px;
+    }
+
+    /* .neo-info,
     .neo-visual {
-        min-width: 100%; /* Make elements full width */
+        flex: 1;
+        min-width: 0; 
+        padding: 10px; 
+        font-size: 0.4em;
+        box-sizing: border-box;
+    } */
+
+    .neo-info {
+        flex: 0 1 35%; /* Adjusted flex property */
+        min-width: 0; 
         padding: 10px; /* Reduce padding on smaller screens */
+        font-size: 0.4em;
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 255, 255, 0);
+    }
+
+    .neo-visual {
+        flex: 1;
+        min-width: 0; 
+        padding: 10px; /* Reduce padding on smaller screens */
+        font-size: 0.4em;
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 255, 255, 0);
+
+
     }
 
     .title,
     .neo-title,
     .neo-count {
-        font-size: 1.5em; /* Reduce font size */
+        font-size: 0.7em; /* Reduce font size */
     }
 
     .content {
@@ -163,13 +210,7 @@ canvas {
     }
 
     .legend li {
-        display: block; /* Stack legend items vertically */
-        margin-bottom: 5px;
+        
+        font-size: 0.4em;
     }
 }
-
-
-
-
-
-

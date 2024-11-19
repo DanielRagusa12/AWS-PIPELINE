@@ -115,11 +115,16 @@ document.addEventListener("DOMContentLoaded", function() {
         return neoEntry;
     }
 
+    function isMobileDevice() {
+        return window.innerWidth <= 768; // Adjust breakpoint as needed
+    }
+    
+
     function addIrregularShapes(neo) {
         const container = document.getElementById(`visual-${neo.neo_id}`);
         if (!container) return;
     
-        const scaleFactor = 400;  // Adjusted scale factor
+        const scaleFactor = isMobileDevice() ? 300 : 400; // Adjust scale factors as needed
         const statueHeightMeters = 93;
         const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
         const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
@@ -148,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
         // Create an irregular shape for the NEO
         const points = [];
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 15; i++) {
             points.push(new THREE.Vector3(
                 THREE.MathUtils.randFloatSpread(1),
                 THREE.MathUtils.randFloatSpread(1),
