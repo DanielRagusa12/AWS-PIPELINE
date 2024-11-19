@@ -183,7 +183,7 @@ canvas {
         flex: 0 1 35%; /* Adjusted flex property */
         min-width: 0; 
         padding: 10px; /* Reduce padding on smaller screens */
-        font-size: 0.4em;
+        font-size: 0.6em;
         box-sizing: border-box;
         border: 1px solid rgba(255, 255, 255, 0);
     }
@@ -192,7 +192,6 @@ canvas {
         flex: 1;
         min-width: 0; 
         padding: 10px; /* Reduce padding on smaller screens */
-        font-size: 0.4em;
         box-sizing: border-box;
         border: 1px solid rgba(255, 255, 255, 0);
 
@@ -202,7 +201,7 @@ canvas {
     .title,
     .neo-title,
     .neo-count {
-        font-size: 0.7em; /* Reduce font size */
+        font-size: 1em; /* Reduce font size */
     }
 
     .content {
