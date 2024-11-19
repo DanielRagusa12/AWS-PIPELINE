@@ -62,8 +62,9 @@ document.addEventListener("DOMContentLoaded", function() {
             <p><strong>NEO ID:</strong> ${neo.neo_id}</p>
             <p><a href="${neo.nasa_jpl_url}" target="_blank">NASA JPL URL</a></p>
             <p><strong>Is Potentially Hazardous:</strong> ${neo.is_potentially_hazardous_asteroid}</p>
-            <p><strong>Absolute Magnitude H:</strong> ${neo.absolute_magnitude_h}</p>
         `;
+        // add later if needed <p><strong>Absolute Magnitude H:</strong> ${neo.absolute_magnitude_h}</p>
+
 
         // Check if not on mobile device, include additional details
         if (!isMobileDevice()) {
