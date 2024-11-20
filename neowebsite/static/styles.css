@@ -168,7 +168,9 @@ canvas {
 @media (max-width: 768px) {
     body {
         background: url('assets/background-medium.jpg') no-repeat center center fixed;
-        background-size: auto;
+        background-size: cover;
+        background-position: top right;
+        background-attachment: scroll; /* Prevent fixed backgrounds on mobile */
         min-height: 100vh; /* Ensure the background spans the viewport */
     }
 
