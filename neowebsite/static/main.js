@@ -28,8 +28,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 data.neos.forEach(neo => {
                     const neoEntry = createNeoEntry(neo);
                     neoContainer.appendChild(neoEntry);
+                    // Do NOT call addIrregularShapes(neo) here yet
+                });
+
+                // Show the content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                // Switch the body background to the background image
+                document.body.classList.remove('loading');
+                document.body.classList.add('loaded');
+
+                // Now that the content is visible, initialize the NEO visuals
+                data.neos.forEach(neo => {
                     addIrregularShapes(neo);
                 });
+
             } else {
                 console.error("No NEO Data found");
             }
@@ -64,7 +78,6 @@ document.addEventListener("DOMContentLoaded", function() {
             <p><strong>Is Potentially Hazardous:</strong> ${neo.is_potentially_hazardous_asteroid}</p>
         `;
         // add later if needed <p><strong>Absolute Magnitude H:</strong> ${neo.absolute_magnitude_h}</p>
-
 
         // Check if not on mobile device, include additional details
         if (!isMobileDevice()) {
@@ -118,69 +131,69 @@ document.addEventListener("DOMContentLoaded", function() {
     function addIrregularShapes(neo) {
         const container = document.getElementById(`visual-${neo.neo_id}`);
         if (!container) return;
-    
+
         const scaleFactor = isMobileDevice() ? 800 : 400; // Adjust scale factors as needed
         const statueHeightMeters = 93;
         const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
         const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
         const diameterMax = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_max) * scaleFactor;
         const diameterMedian = (diameterMin + diameterMax) / 2;
-    
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
-    
+
         // Store the scene, renderer, and camera
         scenes[neo.neo_id] = scene;
         renderers[neo.neo_id] = renderer;
         cameras[neo.neo_id] = camera;
-    
+
         // Create a reference shape for the Statue of Liberty with a fixed size
         const geometryReference = new THREE.BoxGeometry(fixedReferenceHeight / 2, fixedReferenceHeight, fixedReferenceHeight / 2);
         const materialReference = new THREE.MeshBasicMaterial({ color: 0x1a73e8, wireframe: true });
         const referenceShape = new THREE.Mesh(geometryReference, materialReference);
-    
+
         // Create an asteroid-like shape for the NEO
         const radius = diameterMedian / 2;
         const detail = 2; // Increase for more detail if needed
         const neoGeometry = new THREE.IcosahedronGeometry(radius, detail);
-    
+
         // Displace the vertices to create an irregular surface
         const displacement = 0.1 * radius; // Adjust this value to control roughness
         const vertices = neoGeometry.attributes.position.array;
-    
+
         for (let i = 0; i < vertices.length; i += 3) {
             const x = vertices[i];
             const y = vertices[i + 1];
             const z = vertices[i + 2];
-    
+
             const offset = (Math.random() - 0.5) * 2 * displacement;
             vertices[i] += x / radius * offset;
             vertices[i + 1] += y / radius * offset;
             vertices[i + 2] += z / radius * offset;
         }
-    
+
         neoGeometry.computeVertexNormals();
-    
+
         const materialNeo = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
         const neoShape = new THREE.Mesh(neoGeometry, materialNeo);
-    
+
         // Position the reference shape and NEO shape
         const spacing = radius + (fixedReferenceHeight / 2) + 15;
         referenceShape.position.set(-spacing, 0, 0); // Move to the left
         neoShape.position.set(spacing, 0, 0); // Move to the right
-    
+
         scene.add(referenceShape);
         scene.add(neoShape);
-    
+
         // Adjust camera position dynamically
         camera.position.z = Math.max(200, 3 * spacing); // Set a minimum distance
-    
+
         camera.lookAt(new THREE.Vector3(0, 0, 0));
-    
+
         function animate() {
             requestAnimationFrame(animate);
             referenceShape.rotation.y += 0.01;
@@ -188,10 +201,9 @@ document.addEventListener("DOMContentLoaded", function() {
             neoShape.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
-    
+
         animate();
     }
-    
 
     window.addEventListener('resize', () => {
         neoData.forEach(neo => {

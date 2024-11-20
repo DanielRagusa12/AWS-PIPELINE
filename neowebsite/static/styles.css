@@ -1,18 +1,49 @@
-
-
 body {
     margin: 0;
     color: white;
-    background: url('assets/background.jpg') no-repeat center center fixed;
-    background-size: cover;
-    background-position: top right;
     font-family: "DM Sans", sans-serif;
     font-weight: 400;
     font-style: normal;
 }
 
+/* Body style while loading */
+body.loading {
+    background-color: black;
+}
 
+/* Body style after loading */
+body.loaded {
+    background: url('assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-position: top right;
+}
 
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black; /* Solid black background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Ensure it overlays other content */
+}
+
+.spinner {
+    border: 16px solid #f3f3f3; /* Light gray */
+    border-top: 16px solid #1a73e8; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
 canvas {
     width: 100% !important;
@@ -23,8 +54,6 @@ ul, ol {
     padding: 0;
     margin: 5%;
 }
-
-
 
 .neo-title, .title, .neo-count {
     text-align: center;
@@ -48,7 +77,6 @@ ul, ol {
     font-size: 1.1em;
 }
 
-
 .legend {
     text-align: center;
     margin-bottom: 20px;
@@ -69,9 +97,6 @@ ul, ol {
     margin-right: 20px;
 }
 
-
-
-
 .color-box {
     display: inline-block;
     width: 15px;
@@ -87,10 +112,6 @@ ul, ol {
 .reference-color {
     background-color: #1a73e8; /* Reference color */
 }
-
-
-
-
 
 .neo-entry:first-of-type {
     margin-top: 150px; /* Adds extra space above the first NEO box */
@@ -116,7 +137,6 @@ ul, ol {
     border: none;
 }
 
-
 .neo-visual {
     flex: 1 1 65%; /* Take up remaining 65% */
     max-width: 100%; /* Allow it to grow to full width */
@@ -128,10 +148,6 @@ ul, ol {
     /* Offset parent's padding using negative margin */
     margin-right: -20px; /* Adjust based on parent's padding */
 }
-
-
-
-
 
 /* Style for the toggle button */
 .toggle-button {
@@ -155,7 +171,6 @@ ul, ol {
     outline: none;
 }
 
-
 a {
     color: #1a73e8;
 }
@@ -166,7 +181,7 @@ canvas {
 }
 
 @media (max-width: 768px) {
-    body {
+    body.loaded {
         background: url('assets/background-medium.jpg') no-repeat center center fixed;
         background-size: cover;
         background-position: top right;
@@ -177,8 +192,16 @@ canvas {
     html, body {
         height: auto; /* Allow the background to adjust to content height */
     }
-    
-    
+
+    .spinner {
+        border: 4px solid #f3f3f3; /* Light gray */
+        border-top: 4px solid #1a73e8; /* Blue */
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 2s linear infinite;
+    }
+
     .neo-entry:first-of-type {
         margin-top: 50px; /* Adds extra space above the first NEO box */
     }
@@ -190,8 +213,6 @@ canvas {
         margin-right: 5px;
         border-radius: 5px;
     }
-
-    
 
     .neo-entry {
         display: flex;
@@ -213,7 +234,6 @@ canvas {
         border: none;
     }
 
-
     .neo-visual {
         flex: 1 1 65%; /* Take up remaining 65% */
         max-width: 100%; /* Allow it to grow to full width */
@@ -226,7 +246,6 @@ canvas {
         margin-right: -20px; /* Adjust based on parent's padding */
     }
 
-
     .title,
     .neo-title,
     .neo-count {
@@ -238,17 +257,15 @@ canvas {
     }
 
     .legend li {
-        
         font-size: 0.4em;
     }
 }
 
 @media (min-width: 2000px) {
-    
-    body {
+    body.loaded {
         background-size: cover;
     }
-    
+
     .neo-entry:first-of-type {
         margin-top: 50px; /* Adds extra space above the first NEO box */
     }
@@ -260,8 +277,6 @@ canvas {
         margin-right: 5px;
         border-radius: 5px;
     }
-
-    
 
     .neo-entry {
         display: flex;
@@ -294,5 +309,3 @@ canvas {
         border: none;
     }
 }
-
-
