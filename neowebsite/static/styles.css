@@ -85,7 +85,7 @@ ul, ol {
 }
 
 .reference-color {
-    background-color: #1087a1; /* Reference color */
+    background-color: #1a73e8; /* Reference color */
 }
 
 
@@ -148,7 +148,7 @@ ul, ol {
 }
 
 .toggle-button:hover {
-    background-color: #1558b0;
+    background-color: #1a73e8;
 }
 
 .toggle-button:focus {
@@ -167,8 +167,13 @@ canvas {
 
 @media (max-width: 768px) {
     body {
-        background-size: cover;
-        background-position: top right;
+        background: url('assets/background-medium.jpg') no-repeat center center fixed;
+        background-size: auto;
+        min-height: 100vh; /* Ensure the background spans the viewport */
+    }
+
+    html, body {
+        height: auto; /* Allow the background to adjust to content height */
     }
     
     

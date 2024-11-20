@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
         // Create a reference shape for the Statue of Liberty with a fixed size
         const geometryReference = new THREE.BoxGeometry(fixedReferenceHeight / 2, fixedReferenceHeight, fixedReferenceHeight / 2);
-        const materialReference = new THREE.MeshBasicMaterial({ color: 0x1087a1, wireframe: true });
+        const materialReference = new THREE.MeshBasicMaterial({ color: 0x1a73e8, wireframe: true });
         const referenceShape = new THREE.Mesh(geometryReference, materialReference);
     
         // Create an asteroid-like shape for the NEO
