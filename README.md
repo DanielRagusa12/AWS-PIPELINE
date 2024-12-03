@@ -1,8 +1,10 @@
 # NEO Data Pipeline and Visualization Project
 
+![alt text](image.png)
+
 ## Overview
 
-This project is designed to fetch, process, and visualize today's close approach Near-Earth Object (NEO) data. A NEO's close approach date indicates the day it will be the closest to the Earth in its orbit. The primary focus is on leveraging AWS cloud services to build a scalable and efficient data pipeline. The project also includes a frontend component for visualizing the processed data, providing a clear demonstration of the technical pipeline from data acquisition to end-user presentation.
+This project is designed to fetch, process, and visualize today's close approach Near-Earth Object (NEO) data. A NEO's close approach date indicates the day it will be the closest to the Earth in its orbit. The primary focus is on leveraging AWS cloud services to build a scalable and efficient data pipeline. The project also includes a frontend component for visualizing objects compared to the statue of liberty.
 
 You can view the project here: [NEO Data Visualization](https://aws-pipeline.vercel.app/) **<span style="color: red;">(Best experienced on Firefox-based browsers)</span>**.
 
