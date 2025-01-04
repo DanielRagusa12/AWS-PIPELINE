@@ -1,48 +1,136 @@
+/*************************************************
+ * main.js (updated to use Intersection Observer)
+ *************************************************/
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@v0.167.0/build/three.module.js';
 import { ConvexGeometry } from 'https://cdn.jsdelivr.net/npm/three@v0.167.0/examples/jsm/geometries/ConvexGeometry.js';
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Object to store renderers, cameras, and scenes
+    // We keep references so we can dispose them later
     const renderers = {};
     const cameras = {};
-    const scenes = {}; // Initialize the scenes object
+    const scenes = {};
+    
     let neoData = []; // Store NEO data
 
-    // Get today's date in UTC formatted as YYYY-MM-DD
-    const today = getFormattedDate(new Date());
+    // Create an Intersection Observer to watch each .neo-entry
+    const observerOptions = {
+        root: null,       // use the browser viewport as root
+        rootMargin: '0px',
+        threshold: 0.1    // trigger when 10% is visible
+    };
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
 
-    // Function to detect if the user is on a mobile device
-    function isMobileDevice() {
-        return window.innerWidth <= 768; // Adjust breakpoint as needed
+    /**
+     * Intersection Observer callback:
+     * - If .neo-entry is in view, create the 3D scene (unless we already have it).
+     * - If it's out of view, dispose of that scene to free the WebGL context.
+     */
+    function handleIntersection(entries) {
+        entries.forEach(entry => {
+            const target = entry.target;         // the .neo-entry element
+            const neoId = target.dataset.neoId;  // read data-neo-id
+
+            if (entry.isIntersecting) {
+                // If not already rendered, create the shapes
+                if (!scenes[neoId]) {
+                    const thisNeo = neoData.find(obj => obj.neo_id === neoId);
+                    if (thisNeo) {
+                        addIrregularShapes(thisNeo);
+                    }
+                }
+            } else {
+                // If going out of view, dispose of that scene if it exists
+                if (scenes[neoId]) {
+                    disposeThreeJS(neoId);
+                }
+            }
+        });
     }
 
-    // Fetch NEO data from the API
+    /**
+     * Properly dispose of a Three.js scene so we free up the WebGL context.
+     */
+    function disposeThreeJS(neoId) {
+        const renderer = renderers[neoId];
+        const scene = scenes[neoId];
+        
+        // If we stored an animationFrame ID, we would cancel it here:
+        // cancelAnimationFrame(animateIds[neoId]); // Not used in this example
+
+        // Remove the renderer’s canvas from the DOM
+        if (renderer && renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
+
+        // Traverse the scene and dispose of geometry/materials
+        if (scene) {
+            scene.traverse(object => {
+                if (object.isMesh) {
+                    if (object.geometry) object.geometry.dispose();
+                    if (object.material) {
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(mat => mat.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dispose the renderer itself
+        if (renderer) {
+            renderer.dispose();
+        }
+
+        // Delete references
+        delete scenes[neoId];
+        delete renderers[neoId];
+        delete cameras[neoId];
+    }
+
+    /**
+     * Get today's date in UTC (YYYY-MM-DD).
+     */
+    function getFormattedDate(date) {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // ---------------------------------------------
+    // Fetch the data (adjust your endpoint as needed)
+    // ---------------------------------------------
+    const today = getFormattedDate(new Date());
     fetch(`https://r8rt1aci7a.execute-api.us-east-2.amazonaws.com/dev/get-neo-data?fetch_date=${today}`)
         .then(response => response.json())
         .then(data => {
             if (data) {
-                neoData = data.neos; // Store the fetched NEO data here
+                // Store NEOs
+                neoData = data.neos; 
+                
+                // Update basic info
                 document.getElementById('fetchDate').textContent = data.fetch_date;
                 document.getElementById('neoCount').textContent = `Count: ${data.neos.length}`;
+                
+                // Build the entries in the DOM
                 const neoContainer = document.getElementById('neo-data-container');
                 data.neos.forEach(neo => {
                     const neoEntry = createNeoEntry(neo);
                     neoContainer.appendChild(neoEntry);
-                    // Do NOT call addIrregularShapes(neo) here yet
+
+                    // Observe this entry for intersection
+                    observer.observe(neoEntry);
                 });
 
-                // Show the content
+                // Hide loading spinner, show content
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
 
-                // Switch the body background to the background image
+                // Switch the body background
                 document.body.classList.remove('loading');
                 document.body.classList.add('loaded');
-
-                // Now that the content is visible, initialize the NEO visuals
-                data.neos.forEach(neo => {
-                    addIrregularShapes(neo);
-                });
 
             } else {
                 console.error("No NEO Data found");
@@ -52,17 +140,15 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error("Error fetching NEO Data:", error);
         });
 
-    // Function to get formatted date as YYYY-MM-DD in UTC
-    function getFormattedDate(date) {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
+    /**
+     * Create an HTML block for one NEO (text info + empty .neo-visual container).
+     */
     function createNeoEntry(neo) {
         const neoEntry = document.createElement('div');
         neoEntry.classList.add('neo-entry');
+
+        // <-- NEW: store the neo_id on the container so the observer can find it
+        neoEntry.dataset.neoId = neo.neo_id;
 
         const neoInfo = document.createElement('div');
         neoInfo.classList.add('neo-info');
@@ -71,15 +157,14 @@ document.addEventListener("DOMContentLoaded", function() {
         neoTitle.textContent = neo.name;
         neoInfo.appendChild(neoTitle);
 
-        // Start building the neoDetails string
+        // Build up the HTML for the details
         let neoDetails = `
             <p><strong>NEO ID:</strong> ${neo.neo_id}</p>
             <p><a href="${neo.nasa_jpl_url}" target="_blank">NASA JPL URL</a></p>
             <p><strong>Is Potentially Hazardous:</strong> ${neo.is_potentially_hazardous_asteroid}</p>
         `;
-        // add later if needed <p><strong>Absolute Magnitude H:</strong> ${neo.absolute_magnitude_h}</p>
 
-        // Check if not on mobile device, include additional details
+        // If not on mobile, add extra details
         if (!isMobileDevice()) {
             neoDetails += `
                 <p><strong>Estimated Diameter:</strong></p>
@@ -98,9 +183,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         <li><strong>Date:</strong> ${data.close_approach_date}</li>
                         <li><strong>Relative Velocity:</strong></li>
                         <ul>
-                            <li>Kilometers per second: ${data.relative_velocity.kilometers_per_second}</li>
-                            <li>Kilometers per hour: ${data.relative_velocity.kilometers_per_hour}</li>
-                            <li>Miles per hour: ${data.relative_velocity.miles_per_hour}</li>
+                            <li>Km/s: ${data.relative_velocity.kilometers_per_second}</li>
+                            <li>Km/h: ${data.relative_velocity.kilometers_per_hour}</li>
+                            <li>Mi/h: ${data.relative_velocity.miles_per_hour}</li>
                         </ul>
                         <li><strong>Miss Distance:</strong></li>
                         <ul>
@@ -116,10 +201,11 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
+        // Add the final details to the .neo-info
         neoInfo.innerHTML += neoDetails;
-
         neoEntry.appendChild(neoInfo);
 
+        // This container will hold our Three.js scene
         const neoVisual = document.createElement('div');
         neoVisual.classList.add('neo-visual');
         neoVisual.id = `visual-${neo.neo_id}`;
@@ -128,72 +214,95 @@ document.addEventListener("DOMContentLoaded", function() {
         return neoEntry;
     }
 
+    /**
+     * Check if on mobile (simple breakpoint check).
+     */
+    function isMobileDevice() {
+        return window.innerWidth <= 768; 
+    }
+
+    /**
+     * Create the 3D scene for one NEO. 
+     * Called only when the .neo-entry scrolls into view (via observer).
+     */
     function addIrregularShapes(neo) {
         const container = document.getElementById(`visual-${neo.neo_id}`);
         if (!container) return;
 
-        const scaleFactor = isMobileDevice() ? 800 : 400; // Adjust scale factors as needed
+        // Calculate scale factors
+        const scaleFactor = isMobileDevice() ? 800 : 400;
         const statueHeightMeters = 93;
         const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
+
         const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
         const diameterMax = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_max) * scaleFactor;
         const diameterMedian = (diameterMin + diameterMax) / 2;
 
+        // Create a Three.js scene, camera, and renderer
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
+        const camera = new THREE.PerspectiveCamera(
+            60,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            10000
+        );
         const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
 
-        // Store the scene, renderer, and camera
+        // Store them so we can dispose later
         scenes[neo.neo_id] = scene;
-        renderers[neo.neo_id] = renderer;
         cameras[neo.neo_id] = camera;
+        renderers[neo.neo_id] = renderer;
 
-        // Create a reference shape for the Statue of Liberty with a fixed size
-        const geometryReference = new THREE.BoxGeometry(fixedReferenceHeight / 2, fixedReferenceHeight, fixedReferenceHeight / 2);
-        const materialReference = new THREE.MeshBasicMaterial({ color: 0x1a73e8, wireframe: true });
+        // Reference shape (Statue of Liberty)
+        const geometryReference = new THREE.BoxGeometry(
+            fixedReferenceHeight / 2,
+            fixedReferenceHeight,
+            fixedReferenceHeight / 2
+        );
+        const materialReference = new THREE.MeshBasicMaterial({
+            color: 0x1a73e8,
+            wireframe: true
+        });
         const referenceShape = new THREE.Mesh(geometryReference, materialReference);
 
-        // Create an asteroid-like shape for the NEO
+        // Asteroid-like shape (NEO)
         const radius = diameterMedian / 2;
-        const detail = 2; // Increase for more detail if needed
+        const detail = 2;
         const neoGeometry = new THREE.IcosahedronGeometry(radius, detail);
 
-        // Displace the vertices to create an irregular surface
-        const displacement = 0.1 * radius; // Adjust this value to control roughness
+        // Displace vertices for roughness
+        const displacement = 0.1 * radius;
         const vertices = neoGeometry.attributes.position.array;
-
         for (let i = 0; i < vertices.length; i += 3) {
             const x = vertices[i];
             const y = vertices[i + 1];
             const z = vertices[i + 2];
-
             const offset = (Math.random() - 0.5) * 2 * displacement;
-            vertices[i] += x / radius * offset;
-            vertices[i + 1] += y / radius * offset;
-            vertices[i + 2] += z / radius * offset;
+            vertices[i] += (x / radius) * offset;
+            vertices[i + 1] += (y / radius) * offset;
+            vertices[i + 2] += (z / radius) * offset;
         }
-
         neoGeometry.computeVertexNormals();
 
         const materialNeo = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
         const neoShape = new THREE.Mesh(neoGeometry, materialNeo);
 
-        // Position the reference shape and NEO shape
-        const spacing = radius + (fixedReferenceHeight / 2) + 15;
-        referenceShape.position.set(-spacing, 0, 0); // Move to the left
-        neoShape.position.set(spacing, 0, 0); // Move to the right
+        // Position them in the scene
+        const spacing = radius + fixedReferenceHeight / 2 + 15;
+        referenceShape.position.set(-spacing, 0, 0);
+        neoShape.position.set(spacing, 0, 0);
 
         scene.add(referenceShape);
         scene.add(neoShape);
 
-        // Adjust camera position dynamically
-        camera.position.z = Math.max(200, 3 * spacing); // Set a minimum distance
-
+        // Position camera
+        camera.position.z = Math.max(200, 3 * spacing);
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+        // Animate
         function animate() {
             requestAnimationFrame(animate);
             referenceShape.rotation.y += 0.01;
@@ -201,23 +310,24 @@ document.addEventListener("DOMContentLoaded", function() {
             neoShape.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
-
         animate();
     }
 
+    // Handle window resizing for any visible scenes
     window.addEventListener('resize', () => {
+        // Resize each active scene
         neoData.forEach(neo => {
             const container = document.getElementById(`visual-${neo.neo_id}`);
             const scene = scenes[neo.neo_id];
             const camera = cameras[neo.neo_id];
             const renderer = renderers[neo.neo_id];
             if (container && scene && camera && renderer) {
-                // Update pixel ratio
+                // Update size
                 renderer.setPixelRatio(window.devicePixelRatio);
                 renderer.setSize(container.clientWidth, container.clientHeight);
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
             }
         });
-    });   
+    });
 });
