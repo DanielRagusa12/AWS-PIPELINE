@@ -1,0 +1,7 @@
+aws_region = ""
+aws_profile = ""
+
+raw_data_bucket_name = ""
+
+dynamodb_table_name = ""
+nasa_api_key        = ""

@@ -1,10 +1,10 @@
 import json
+import os
 import boto3
-from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('NEODailyData')
+table = dynamodb.Table(os.environ.get('DYNAMODB_TABLE_NAME', 'NEODailyData'))
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -13,7 +13,19 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(obj)
 
 def lambda_handler(event, context):
-    fetch_date = event['queryStringParameters']['fetch_date']
+    fetch_date = (event.get('queryStringParameters') or {}).get('fetch_date')
+    if not fetch_date:
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': json.dumps({'error': 'fetch_date query parameter is required'})
+        }
+
     
     try:
         response = table.get_item(Key={'fetch_date': fetch_date})
