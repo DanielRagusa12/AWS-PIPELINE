@@ -1,4 +1,5 @@
 :root {
+    color-scheme: dark;
     --bg: #080a12;
     --bg-soft: #101522;
     --panel: rgba(18, 24, 38, 0.82);
@@ -46,17 +47,17 @@ a {
 }
 
 .page-shell {
-    width: min(1440px, calc(100% - 32px));
+    width: min(1440px, calc(100% - 40px));
     margin: 0 auto;
-    padding: 48px 0 72px;
+    padding: 32px 0 72px;
 }
 
 .hero {
-    min-height: 560px;
+    min-height: 520px;
     display: grid;
     align-content: center;
-    gap: 24px;
-    padding: 48px;
+    gap: 22px;
+    padding: clamp(28px, 4vw, 48px);
     border: 1px solid var(--line);
     border-radius: 36px;
     background:
@@ -79,26 +80,27 @@ a {
 }
 
 .hero h1 {
-    max-width: 980px;
+    max-width: 760px;
     margin: 0;
-    font-size: clamp(3rem, 8vw, 7.4rem);
-    line-height: 0.9;
-    letter-spacing: -0.08em;
+    font-size: clamp(3.5rem, 7vw, 6.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.075em;
 }
 
 .hero-copy {
-    max-width: 700px;
+    max-width: 620px;
     margin: 0;
     color: var(--muted);
-    font-size: clamp(1.05rem, 2vw, 1.35rem);
-    line-height: 1.6;
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+    line-height: 1.55;
 }
 
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 18px;
+    gap: 12px;
+    max-width: 1160px;
+    margin-top: 12px;
 }
 
 .summary-card,
@@ -111,15 +113,15 @@ a {
 }
 
 .summary-card {
-    min-height: 112px;
-    padding: 20px;
-    border-radius: 22px;
+    min-height: 96px;
+    padding: 18px 20px;
+    border-radius: 20px;
 }
 
 .summary-card strong {
     display: block;
-    margin-top: 12px;
-    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    margin-top: 10px;
+    font-size: clamp(1.15rem, 1.6vw, 1.55rem);
     line-height: 1.05;
 }
 
@@ -127,34 +129,36 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    margin: 24px 0;
-    padding: 24px;
-    border-radius: 28px;
+    gap: 20px;
+    margin: 24px 0 22px;
+    padding: 20px 24px;
+    border-radius: 24px;
 }
 
 .controls h2 {
     margin: 6px 0 0;
-    font-size: clamp(1.5rem, 3vw, 2.6rem);
+    font-size: clamp(1.6rem, 2.2vw, 2.25rem);
+    line-height: 1;
     letter-spacing: -0.05em;
 }
 
 .sort-controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 10px;
+    width: min(100%, 650px);
 }
 
 .sort-button {
     border: 1px solid var(--line);
     border-radius: 999px;
-    padding: 11px 15px;
+    padding: 10px 14px;
     color: var(--text);
     background: rgba(255, 255, 255, 0.06);
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     font-weight: 700;
+    text-align: center;
     cursor: pointer;
     transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
@@ -249,7 +253,10 @@ a {
     z-index: 1;
     width: var(--asteroid-size);
     height: var(--asteroid-size);
-    animation: floaty 4.8s ease-in-out infinite;
+    min-width: 8px;
+    min-height: 8px;
+    animation: floaty var(--float-speed) ease-in-out infinite;
+    animation-delay: var(--float-delay);
 }
 
 .asteroid {
@@ -257,21 +264,27 @@ a {
     height: 100%;
     border-radius: var(--blob-radius);
     background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.36), transparent 12%),
-        radial-gradient(circle at 68% 66%, rgba(0, 0, 0, 0.28), transparent 22%),
-        radial-gradient(circle at 42% 76%, rgba(0, 0, 0, 0.22), transparent 12%),
-        linear-gradient(135deg, #d7c0a0 0%, #8b7058 42%, #3d352f 100%);
+        radial-gradient(circle at var(--asteroid-highlight-x) var(--asteroid-highlight-y), rgba(255, 245, 225, 0.46), transparent 12%),
+        radial-gradient(circle at var(--crater-one-x) var(--crater-one-y), rgba(0, 0, 0, 0.24), transparent 13%),
+        radial-gradient(circle at var(--crater-two-x) var(--crater-two-y), rgba(0, 0, 0, 0.2), transparent 10%),
+        radial-gradient(circle at var(--crater-three-x) var(--crater-three-y), rgba(255, 255, 255, 0.08), transparent 9%),
+        linear-gradient(135deg,
+            hsl(var(--asteroid-hue), var(--asteroid-saturation), calc(var(--asteroid-lightness) + 22%)) 0%,
+            hsl(var(--asteroid-hue), var(--asteroid-saturation), var(--asteroid-lightness)) 44%,
+            hsl(var(--asteroid-hue), var(--asteroid-saturation), calc(var(--asteroid-lightness) - 18%)) 100%);
     box-shadow:
         inset -18px -22px 36px rgba(0, 0, 0, 0.34),
         inset 16px 14px 24px rgba(255, 255, 255, 0.12),
         0 24px 60px rgba(0, 0, 0, 0.48);
+    transform: rotate(var(--asteroid-tilt)) scale(var(--asteroid-scale-x), var(--asteroid-scale-y));
     animation: tumble var(--spin-speed) linear infinite;
+    animation-delay: var(--spin-delay);
 }
 
 .reference-marker {
     position: absolute;
-    right: 18px;
-    bottom: 34px;
+    right: 24px;
+    bottom: 38px;
     z-index: 1;
     display: grid;
     justify-items: center;
@@ -284,12 +297,7 @@ a {
 }
 
 .reference-scale-line {
-    position: absolute;
-    right: calc(50% - 1px);
-    bottom: 28px;
-    width: 1px;
-    height: calc(var(--reference-size) + 18px);
-    background: linear-gradient(180deg, transparent, rgba(131, 241, 255, 0.42), transparent);
+    display: none;
 }
 
 .reference-object {
@@ -299,39 +307,417 @@ a {
     align-items: end;
     width: 58px;
     height: var(--reference-size);
-    min-height: 54px;
-    max-height: 158px;
+    min-height: 8px;
+    max-height: 220px;
     transform: translateZ(0);
 }
 
-.reference-crown,
-.reference-tower,
-.reference-base {
-    display: block;
-    background: linear-gradient(180deg, #baf8ff 0%, #62d8e9 48%, rgba(49, 113, 136, 0.72) 100%);
-    box-shadow: 0 0 20px rgba(131, 241, 255, 0.22);
+.reference-tiny {
+    width: 18px;
 }
 
-.reference-crown {
-    width: 16px;
+.reference-tiny .building-spire,
+.reference-tiny .building-crown,
+.reference-tiny .building-core,
+.reference-tiny .building-base,
+.reference-tiny .mountain-peak,
+.reference-tiny .mountain-snow,
+.reference-tiny .statue-arm,
+.reference-tiny .statue-torch,
+.reference-tiny .statue-head,
+.reference-tiny .statue-crown,
+.reference-tiny .statue-body,
+.reference-tiny .statue-tablet,
+.reference-tiny .statue-base,
+.reference-tiny .reference-base,
+.reference-tiny .reference-head,
+.reference-tiny .reference-torso,
+.reference-tiny .reference-image {
+    display: none;
+}
+
+.reference-tiny::after {
+    display: block;
+    width: max(var(--reference-size), 2px);
+    height: max(var(--reference-size), 2px);
+    min-width: 2px;
+    min-height: 2px;
+    content: "";
+    border-radius: 50%;
+    background: #baf8ff;
+    box-shadow: 0 0 10px rgba(131, 241, 255, 0.8);
+}
+
+.reference-image {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 96px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 14px rgba(131, 241, 255, 0.42));
+}
+
+.reference-svg {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 92px;
+    color: #83f1ff;
+    fill: currentColor;
+    filter: drop-shadow(0 0 14px rgba(131, 241, 255, 0.38));
+}
+
+.reference-svg-statue {
+    min-width: 34px;
+}
+
+.building-spire,
+.building-crown,
+.building-core,
+.building-base,
+.mountain-peak,
+.mountain-snow,
+.landmark-silhouette,
+.mountain-silhouette,
+.reference-base,
+.reference-head,
+.reference-torso {
+    display: block;
+    background: linear-gradient(180deg, #d9fbff 0%, #83f1ff 48%, rgba(57, 144, 170, 0.86) 100%);
+    box-shadow: 0 0 18px rgba(131, 241, 255, 0.28);
+}
+
+.landmark-silhouette,
+.mountain-silhouette {
+    position: relative;
+    display: block;
+    height: 100%;
+    background: linear-gradient(180deg, #d9fbff 0%, #83f1ff 52%, rgba(57, 144, 170, 0.9) 100%);
+    filter: drop-shadow(0 0 16px rgba(131, 241, 255, 0.34));
+}
+
+.landmark-silhouette::before,
+.landmark-silhouette::after {
+    position: absolute;
+    display: block;
+    content: "";
+    background: inherit;
+}
+
+.reference-statue_of_liberty {
+    width: 56px;
+}
+
+.statue-arm,
+.statue-torch,
+.statue-head,
+.statue-crown,
+.statue-body,
+.statue-tablet,
+.statue-base {
+    position: absolute;
+    display: block;
+    background: linear-gradient(180deg, #d9fbff 0%, #83f1ff 52%, rgba(57, 144, 170, 0.9) 100%);
+    filter: drop-shadow(0 0 12px rgba(131, 241, 255, 0.28));
+}
+
+.statue-body {
+    left: 21px;
+    bottom: 14%;
+    width: 22px;
+    height: 58%;
+    border-radius: 14px 14px 3px 3px;
+    clip-path: polygon(42% 0, 64% 0, 80% 100%, 8% 100%, 26% 42%);
+}
+
+.statue-base {
+    left: 13px;
+    bottom: 0;
+    width: 40px;
+    height: 14%;
+    border-radius: 4px 4px 2px 2px;
+}
+
+.statue-head {
+    left: 27px;
+    top: 22%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.statue-crown {
+    left: 22px;
+    top: 17%;
+    width: 20px;
+    height: 10px;
+    clip-path: polygon(50% 0, 58% 48%, 88% 22%, 68% 66%, 100% 78%, 62% 82%, 56% 100%, 44% 100%, 38% 82%, 0 78%, 32% 66%, 12% 22%, 42% 48%);
+}
+
+.statue-arm {
+    left: 21px;
+    top: 5%;
+    width: 7px;
+    height: 28%;
+    border-radius: 999px;
+    transform: rotate(-18deg);
+    transform-origin: bottom center;
+}
+
+.statue-torch {
+    left: 17px;
+    top: 0;
+    width: 10px;
+    height: 9%;
+    min-height: 8px;
+    border-radius: 999px 999px 4px 4px;
+    clip-path: polygon(44% 100%, 56% 100%, 72% 55%, 100% 35%, 68% 24%, 58% 0, 42% 0, 32% 24%, 0 35%, 28% 55%);
+}
+
+.statue-tablet {
+    display: none;
+}
+
+.reference-statue_of_liberty .landmark-silhouette {
+    width: 46px;
+    clip-path: polygon(
+        46% 12%,
+        62% 12%,
+        70% 26%,
+        66% 44%,
+        76% 100%,
+        20% 100%,
+        30% 44%,
+        26% 26%
+    );
+}
+
+.reference-statue_of_liberty .landmark-silhouette::before {
+    left: 48%;
+    top: 0;
+    width: 9px;
+    height: 28%;
+    border-radius: 999px 999px 0 0;
+    transform: rotate(-26deg);
+    transform-origin: bottom center;
+    clip-path: polygon(42% 0, 58% 0, 70% 76%, 100% 100%, 0 100%, 30% 76%);
+}
+
+.reference-statue_of_liberty .landmark-silhouette::after {
+    left: 28%;
+    top: 4%;
+    width: 22px;
+    height: 16%;
+    clip-path: polygon(50% 0, 60% 42%, 100% 28%, 68% 62%, 88% 100%, 50% 74%, 12% 100%, 32% 62%, 0 28%, 40% 42%);
+}
+
+.reference-eiffel_tower .landmark-silhouette {
+    width: 62px;
+    clip-path: polygon(
+        48% 0,
+        52% 0,
+        56% 18%,
+        54% 36%,
+        64% 68%,
+        84% 100%,
+        68% 100%,
+        52% 74%,
+        48% 74%,
+        32% 100%,
+        16% 100%,
+        36% 68%,
+        46% 36%,
+        44% 18%
+    );
+}
+
+.reference-eiffel_tower .landmark-silhouette::before {
+    left: 18%;
+    top: 58%;
+    width: 64%;
+    height: 7%;
+    border-radius: 999px;
+}
+
+.reference-eiffel_tower .landmark-silhouette::after {
+    left: 28%;
+    top: 34%;
+    width: 44%;
+    height: 5%;
+    border-radius: 999px;
+}
+
+.reference-burj_khalifa .landmark-silhouette {
+    width: 46px;
+    clip-path: polygon(
+        50% 0,
+        56% 8%,
+        56% 22%,
+        64% 22%,
+        64% 40%,
+        58% 40%,
+        58% 58%,
+        72% 58%,
+        72% 78%,
+        84% 78%,
+        84% 100%,
+        16% 100%,
+        16% 82%,
+        30% 82%,
+        30% 64%,
+        42% 64%,
+        42% 44%,
+        36% 44%,
+        36% 26%,
+        46% 26%,
+        46% 8%
+    );
+}
+
+.reference-mountain .mountain-silhouette {
+    width: 76px;
+    clip-path: polygon(
+        50% 0,
+        62% 32%,
+        70% 26%,
+        100% 100%,
+        0 100%,
+        30% 34%,
+        40% 42%
+    );
+}
+
+.building-spire {
+    width: 6px;
+    height: 16%;
+    min-height: 8px;
+    border-radius: 999px 999px 0 0;
+}
+
+.building-crown {
+    width: 22px;
     height: 12%;
     min-height: 8px;
-    clip-path: polygon(50% 0, 66% 52%, 100% 62%, 70% 78%, 72% 100%, 28% 100%, 30% 78%, 0 62%, 34% 52%);
 }
 
-.reference-tower {
-    width: 18px;
-    height: 66%;
+.building-core {
+    width: 30px;
+    height: 58%;
     min-height: 26px;
-    border-radius: 999px 999px 4px 4px;
-    clip-path: polygon(38% 0, 62% 0, 72% 100%, 28% 100%);
 }
 
+.building-base,
 .reference-base {
+    width: 52px;
+    height: 14%;
+    min-height: 9px;
+    border-radius: 5px 5px 3px 3px;
+}
+
+.reference-head {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+}
+
+.reference-torso {
+    width: 20px;
+    height: 52%;
+    min-height: 26px;
+    border-radius: 999px 999px 7px 7px;
+}
+
+.reference-person .reference-base {
+    width: 34px;
+    height: 12%;
+}
+
+.reference-statue_of_liberty .building-spire {
+    width: 8px;
+    height: 12%;
+    clip-path: polygon(50% 0, 70% 48%, 100% 58%, 72% 76%, 70% 100%, 30% 100%, 28% 76%, 0 58%, 30% 48%);
+}
+
+.reference-statue_of_liberty .building-crown {
+    width: 24px;
+    height: 14%;
+    clip-path: polygon(50% 0, 58% 48%, 88% 36%, 68% 68%, 100% 78%, 62% 82%, 58% 100%, 42% 100%, 38% 82%, 0 78%, 32% 68%, 12% 36%, 42% 48%);
+}
+
+.reference-statue_of_liberty .building-core {
+    width: 28px;
+    height: 56%;
+    clip-path: polygon(28% 0, 72% 0, 88% 100%, 12% 100%);
+}
+
+.reference-statue_of_liberty .building-base {
     width: 44px;
+    height: 16%;
+}
+
+.reference-eiffel_tower .building-spire {
+    width: 5px;
+    height: 12%;
+}
+
+.reference-eiffel_tower .building-crown {
+    width: 26px;
+    height: 12%;
+    clip-path: polygon(44% 0, 56% 0, 74% 100%, 26% 100%);
+}
+
+.reference-eiffel_tower .building-core {
+    width: 58px;
+    height: 60%;
+    background:
+        linear-gradient(70deg, transparent 0 38%, #83f1ff 39% 43%, transparent 44% 56%, #83f1ff 57% 61%, transparent 62%),
+        linear-gradient(110deg, transparent 0 38%, rgba(217, 251, 255, 0.9) 39% 43%, transparent 44% 56%, rgba(217, 251, 255, 0.9) 57% 61%, transparent 62%);
+    box-shadow: 0 0 18px rgba(131, 241, 255, 0.24);
+    clip-path: polygon(46% 0, 54% 0, 92% 100%, 8% 100%);
+}
+
+.reference-eiffel_tower .building-base {
+    width: 68px;
+    height: 12%;
+    clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+}
+
+.reference-burj_khalifa .building-spire {
+    width: 4px;
     height: 18%;
-    min-height: 10px;
-    border-radius: 6px 6px 3px 3px;
+}
+
+.reference-burj_khalifa .building-crown {
+    width: 14px;
+    height: 18%;
+    clip-path: polygon(46% 0, 62% 0, 68% 100%, 34% 100%);
+}
+
+.reference-burj_khalifa .building-core {
+    width: 42px;
+    height: 56%;
+    clip-path: polygon(48% 0, 70% 0, 70% 18%, 78% 18%, 78% 40%, 66% 40%, 66% 64%, 86% 64%, 86% 100%, 14% 100%, 14% 70%, 34% 70%, 34% 44%, 26% 44%, 26% 22%, 42% 22%);
+}
+
+.reference-burj_khalifa .building-base {
+    width: 54px;
+    height: 8%;
+}
+
+.mountain-peak {
+    width: 54px;
+    height: 78%;
+    border-radius: 6px;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.mountain-snow {
+    position: absolute;
+    top: 18%;
+    width: 22px;
+    height: 20%;
+    background: rgba(255, 255, 255, 0.8);
+    clip-path: polygon(50% 0, 100% 100%, 58% 72%, 45% 100%, 0 100%);
 }
 
 .neo-content {
@@ -390,6 +776,101 @@ a {
     line-height: 1.45;
 }
 
+.reference-select-label {
+    display: grid;
+    gap: 8px;
+    color: var(--cyan);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.reference-picker {
+    position: relative;
+}
+
+.reference-picker-button {
+    width: 100%;
+    border: 1px solid rgba(131, 241, 255, 0.18);
+    border-radius: 14px;
+    padding: 12px 40px 12px 14px;
+    text-align: left;
+    color: var(--text);
+    background:
+        linear-gradient(45deg, transparent 50%, var(--cyan) 50%) calc(100% - 20px) 50% / 7px 7px no-repeat,
+        linear-gradient(135deg, var(--cyan) 50%, transparent 50%) calc(100% - 15px) 50% / 7px 7px no-repeat,
+        linear-gradient(180deg, rgba(18, 24, 38, 0.98), rgba(12, 17, 29, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.18);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.reference-picker-button:hover,
+.reference-picker.open .reference-picker-button {
+    border-color: rgba(131, 241, 255, 0.36);
+    background:
+        linear-gradient(45deg, transparent 50%, var(--cyan) 50%) calc(100% - 20px) 50% / 7px 7px no-repeat,
+        linear-gradient(135deg, var(--cyan) 50%, transparent 50%) calc(100% - 15px) 50% / 7px 7px no-repeat,
+        linear-gradient(180deg, rgba(22, 30, 48, 0.98), rgba(14, 20, 34, 0.98));
+}
+
+.reference-picker-button:focus {
+    border-color: rgba(131, 241, 255, 0.72);
+    outline: none;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(131, 241, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.reference-picker-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 20;
+    display: none;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(131, 241, 255, 0.2);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(18, 24, 38, 0.98), rgba(9, 13, 24, 0.98));
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    backdrop-filter: blur(18px);
+}
+
+.reference-picker.open .reference-picker-menu {
+    display: grid;
+    gap: 6px;
+}
+
+.reference-picker-option {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    padding: 10px 12px;
+    color: var(--text);
+    background: transparent;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.reference-picker-option:hover,
+.reference-picker-option.active {
+    color: var(--text);
+    border-color: rgba(131, 241, 255, 0.28);
+    background: rgba(131, 241, 255, 0.12);
+}
+
+.reference-picker-option.active {
+    box-shadow: none;
+}
+
 .metric-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -432,7 +913,7 @@ a {
 }
 
 @keyframes tumble {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(calc(360deg + var(--asteroid-tilt))) scale(var(--asteroid-scale-x), var(--asteroid-scale-y)); }
 }
 
 @keyframes floaty {
@@ -460,7 +941,7 @@ a {
     }
 
     .sort-controls {
-        justify-content: flex-start;
+        width: 100%;
     }
 }
 
@@ -485,8 +966,20 @@ a {
             url('assets/background-medium.jpg') center / cover;
     }
 
+    .hero h1 {
+        font-size: clamp(3rem, 16vw, 4.8rem);
+    }
+
+    .hero-copy {
+        font-size: 1rem;
+    }
+
     .summary-grid,
     .metric-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sort-controls {
         grid-template-columns: 1fr;
     }
 
