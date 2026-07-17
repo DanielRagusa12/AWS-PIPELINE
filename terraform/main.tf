@@ -171,6 +171,8 @@ resource "aws_lambda_function" "daily_fetch" {
       NASA_API_KEY         = var.nasa_api_key
       RAW_DATA_BUCKET_NAME = aws_s3_bucket.raw_data.bucket
       DYNAMODB_TABLE_NAME  = aws_dynamodb_table.neo_daily_data.name
+      FEED_WINDOW_DAYS     = tostring(var.feed_window_days)
+      MAX_RETURNED_NEOS    = tostring(var.max_returned_neos)
     }
   }
 

@@ -40,6 +40,18 @@ variable "daily_fetch_schedule_expression" {
   default     = "cron(15 8 * * ? *)"
 }
 
+variable "feed_window_days" {
+  description = "Number of days after today to include in the NASA NeoWs feed query."
+  type        = number
+  default     = 7
+}
+
+variable "max_returned_neos" {
+  description = "Maximum number of curated NEOs returned to the frontend."
+  type        = number
+  default     = 50
+}
+
 variable "lambda_runtime" {
   description = "Python Lambda runtime."
   type        = string

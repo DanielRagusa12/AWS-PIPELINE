@@ -5,3 +5,5 @@ raw_data_bucket_name = ""
 
 dynamodb_table_name = ""
 nasa_api_key        = ""
+feed_window_days    = 7
+max_returned_neos   = 50
