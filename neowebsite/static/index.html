@@ -3,47 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEO Daily</title>
+    <title>NEO Scale Atlas</title>
     <link rel="stylesheet" href="styles.css">
-
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
-
-    <script type="importmap">
-        {
-          "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@v0.167.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.167.0/examples/jsm/"
-          }
-        }
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700;9..40,900&display=swap" rel="stylesheet">
 </head>
-<body class="loading">
-    <!-- Loading Icon -->
-    <div id="loading">
-        <div class="spinner"></div>
-    </div>
+<body>
+    <main class="page-shell">
+        <section class="hero" aria-labelledby="page-title">
+            <p class="eyebrow">Near-Earth Object Scale Atlas</p>
+            <h1 id="page-title">Asteroids passing Earth this week.</h1>
+            <p class="hero-copy">A curated visual atlas of notable near-Earth objects, scaled against familiar landmarks.</p>
 
-    <!-- Main Content -->
-    <div id="content" style="display: none;">
-        <div class="content">
-            <h1 class="title">Today's Close Approach NEO Data</h1>
-            <h2 class="neo-title" id="fetchDate"></h2>
-            <h3 class="neo-count" id="neoCount">Count: </h3>
-            <div class="legend">
-                <ul>
-                    <li><span class="color-box reference-color"></span> Statue of Liberty</li>
-                    <li><span class="color-box neo-color"></span> Near Earth Object (NEO)</li>
-                </ul>
+            <div class="summary-grid" aria-label="Dataset summary">
+                <article class="summary-card">
+                    <span class="summary-label">Window</span>
+                    <strong id="windowRange">Loading...</strong>
+                </article>
+                <article class="summary-card">
+                    <span class="summary-label">Showing</span>
+                    <strong id="returnedCount">--</strong>
+                </article>
+                <article class="summary-card">
+                    <span class="summary-label">Largest</span>
+                    <strong id="largestNeo">--</strong>
+                </article>
+                <article class="summary-card">
+                    <span class="summary-label">Closest Pass</span>
+                    <strong id="closestNeo">--</strong>
+                </article>
             </div>
-            <div id="neo-data-container"></div>
-        </div>
-    </div>
+        </section>
 
-    <script type="module" src="main.js"></script>
+        <section class="controls" aria-label="Sort controls">
+            <div>
+                <p class="section-kicker">Sort the atlas</p>
+                <h2>Sort the close approaches.</h2>
+            </div>
+            <div id="sortControls" class="sort-controls"></div>
+        </section>
+
+        <section id="statusMessage" class="status-message" role="status">
+            <span class="loader"></span>
+            Loading this week's NEO data...
+        </section>
+
+        <section id="neoGrid" class="neo-grid" aria-label="Near-Earth object cards"></section>
+    </main>
+
+    <script src="main.js"></script>
 </body>
 </html>

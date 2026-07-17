@@ -1,333 +1,482 @@
-/*************************************************
- * main.js (updated to use Intersection Observer)
- *************************************************/
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@v0.167.0/build/three.module.js';
-import { ConvexGeometry } from 'https://cdn.jsdelivr.net/npm/three@v0.167.0/examples/jsm/geometries/ConvexGeometry.js';
+const API_URL = 'https://kw0uic6dhe.execute-api.us-east-2.amazonaws.com/get-neo-data';
 
-document.addEventListener("DOMContentLoaded", function() {
-    // We keep references so we can dispose them later
-    const renderers = {};
-    const cameras = {};
-    const scenes = {};
-    
-    let neoData = []; // Store NEO data
+const REFERENCE_ASSETS = {};
+const ALLOWED_REFERENCE_IDS = new Set([
+    'average_human',
+    'statue_of_liberty',
+    'eiffel_tower',
+    'burj_khalifa',
+    'mount_everest'
+]);
 
-    // Create an Intersection Observer to watch each .neo-entry
-    const observerOptions = {
-        root: null,       // use the browser viewport as root
-        rootMargin: '0px',
-        threshold: 0.1    // trigger when 10% is visible
-    };
-    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+const state = {
+    data: null,
+    neos: [],
+    referenceObjects: new Map(),
+    activeSortId: 'visual_interest'
+};
 
-    /**
-     * Intersection Observer callback:
-     * - If .neo-entry is in view, create the 3D scene (unless we already have it).
-     * - If it's out of view, dispose of that scene to free the WebGL context.
-     */
-    function handleIntersection(entries) {
-        entries.forEach(entry => {
-            const target = entry.target;         // the .neo-entry element
-            const neoId = target.dataset.neoId;  // read data-neo-id
+document.addEventListener('DOMContentLoaded', init);
 
-            if (entry.isIntersecting) {
-                // If not already rendered, create the shapes
-                if (!scenes[neoId]) {
-                    const thisNeo = neoData.find(obj => obj.neo_id === neoId);
-                    if (thisNeo) {
-                        addIrregularShapes(thisNeo);
-                    }
-                }
-            } else {
-                // If going out of view, dispose of that scene if it exists
-                if (scenes[neoId]) {
-                    disposeThreeJS(neoId);
-                }
-            }
-        });
-    }
+async function init() {
+    try {
+        const fetchDate = getUtcDate(new Date());
+        const response = await fetch(`${API_URL}?fetch_date=${fetchDate}`);
 
-    /**
-     * Properly dispose of a Three.js scene so we free up the WebGL context.
-     */
-    function disposeThreeJS(neoId) {
-        const renderer = renderers[neoId];
-        const scene = scenes[neoId];
-        
-        // If we stored an animationFrame ID, we would cancel it here:
-        // cancelAnimationFrame(animateIds[neoId]); // Not used in this example
-
-        // Remove the renderer’s canvas from the DOM
-        if (renderer && renderer.domElement && renderer.domElement.parentNode) {
-            renderer.domElement.parentNode.removeChild(renderer.domElement);
+        if (!response.ok) {
+            throw new Error(`API returned ${response.status}`);
         }
 
-        // Traverse the scene and dispose of geometry/materials
-        if (scene) {
-            scene.traverse(object => {
-                if (object.isMesh) {
-                    if (object.geometry) object.geometry.dispose();
-                    if (object.material) {
-                        if (Array.isArray(object.material)) {
-                            object.material.forEach(mat => mat.dispose());
-                        } else {
-                            object.material.dispose();
-                        }
-                    }
-                }
-            });
-        }
-
-        // Dispose the renderer itself
-        if (renderer) {
-            renderer.dispose();
-        }
-
-        // Delete references
-        delete scenes[neoId];
-        delete renderers[neoId];
-        delete cameras[neoId];
-    }
-
-    /**
-     * Get today's date in UTC (YYYY-MM-DD).
-     */
-    function getFormattedDate(date) {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    // ---------------------------------------------
-    // Fetch the data (adjust your endpoint as needed)
-    // ---------------------------------------------
-    const today = getFormattedDate(new Date());
-    fetch(`https://r8rt1aci7a.execute-api.us-east-2.amazonaws.com/dev/get-neo-data?fetch_date=${today}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data) {
-                // Store NEOs
-                neoData = data.neos; 
-                
-                // Update basic info
-                document.getElementById('fetchDate').textContent = data.fetch_date;
-                document.getElementById('neoCount').textContent = `Count: ${data.neos.length}`;
-                
-                // Build the entries in the DOM
-                const neoContainer = document.getElementById('neo-data-container');
-                data.neos.forEach(neo => {
-                    const neoEntry = createNeoEntry(neo);
-                    neoContainer.appendChild(neoEntry);
-
-                    // Observe this entry for intersection
-                    observer.observe(neoEntry);
-                });
-
-                // Hide loading spinner, show content
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-
-                // Switch the body background
-                document.body.classList.remove('loading');
-                document.body.classList.add('loaded');
-
-            } else {
-                console.error("No NEO Data found");
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching NEO Data:", error);
-        });
-
-    /**
-     * Create an HTML block for one NEO (text info + empty .neo-visual container).
-     */
-    function createNeoEntry(neo) {
-        const neoEntry = document.createElement('div');
-        neoEntry.classList.add('neo-entry');
-
-        // <-- NEW: store the neo_id on the container so the observer can find it
-        neoEntry.dataset.neoId = neo.neo_id;
-
-        const neoInfo = document.createElement('div');
-        neoInfo.classList.add('neo-info');
-
-        const neoTitle = document.createElement('h2');
-        neoTitle.textContent = neo.name;
-        neoInfo.appendChild(neoTitle);
-
-        // Build up the HTML for the details
-        let neoDetails = `
-            <p><strong>NEO ID:</strong> ${neo.neo_id}</p>
-            <p><a href="${neo.nasa_jpl_url}" target="_blank">NASA JPL URL</a></p>
-            <p><strong>Is Potentially Hazardous:</strong> ${neo.is_potentially_hazardous_asteroid}</p>
-        `;
-
-        // If not on mobile, add extra details
-        if (!isMobileDevice()) {
-            neoDetails += `
-                <p><strong>Estimated Diameter:</strong></p>
-                <ul>
-                    <li>Kilometers: ${neo.estimated_diameter.kilometers.estimated_diameter_min} - ${neo.estimated_diameter.kilometers.estimated_diameter_max}</li>
-                    <li>Meters: ${neo.estimated_diameter.meters.estimated_diameter_min} - ${neo.estimated_diameter.meters.estimated_diameter_max}</li>
-                    <li>Miles: ${neo.estimated_diameter.miles.estimated_diameter_min} - ${neo.estimated_diameter.miles.estimated_diameter_max}</li>
-                    <li>Feet: ${neo.estimated_diameter.feet.estimated_diameter_min} - ${neo.estimated_diameter.feet.estimated_diameter_max}</li>
-                </ul>
-                <h3>Close Approach Data</h3>
-            `;
-
-            neo.close_approach_data.forEach(data => {
-                const closeApproachDetails = `
-                    <ul>
-                        <li><strong>Date:</strong> ${data.close_approach_date}</li>
-                        <li><strong>Relative Velocity:</strong></li>
-                        <ul>
-                            <li>Km/s: ${data.relative_velocity.kilometers_per_second}</li>
-                            <li>Km/h: ${data.relative_velocity.kilometers_per_hour}</li>
-                            <li>Mi/h: ${data.relative_velocity.miles_per_hour}</li>
-                        </ul>
-                        <li><strong>Miss Distance:</strong></li>
-                        <ul>
-                            <li>Astronomical: ${data.miss_distance.astronomical}</li>
-                            <li>Lunar: ${data.miss_distance.lunar}</li>
-                            <li>Kilometers: ${data.miss_distance.kilometers}</li>
-                            <li>Miles: ${data.miss_distance.miles}</li>
-                        </ul>
-                        <li><strong>Orbiting Body:</strong> ${data.orbiting_body}</li>
-                    </ul>
-                `;
-                neoDetails += closeApproachDetails;
-            });
-        }
-
-        // Add the final details to the .neo-info
-        neoInfo.innerHTML += neoDetails;
-        neoEntry.appendChild(neoInfo);
-
-        // This container will hold our Three.js scene
-        const neoVisual = document.createElement('div');
-        neoVisual.classList.add('neo-visual');
-        neoVisual.id = `visual-${neo.neo_id}`;
-        neoEntry.appendChild(neoVisual);
-
-        return neoEntry;
-    }
-
-    /**
-     * Check if on mobile (simple breakpoint check).
-     */
-    function isMobileDevice() {
-        return window.innerWidth <= 768; 
-    }
-
-    /**
-     * Create the 3D scene for one NEO. 
-     * Called only when the .neo-entry scrolls into view (via observer).
-     */
-    function addIrregularShapes(neo) {
-        const container = document.getElementById(`visual-${neo.neo_id}`);
-        if (!container) return;
-
-        // Calculate scale factors
-        const scaleFactor = isMobileDevice() ? 800 : 400;
-        const statueHeightMeters = 93;
-        const fixedReferenceHeight = (statueHeightMeters / 1000) * scaleFactor;
-
-        const diameterMin = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_min) * scaleFactor;
-        const diameterMax = parseFloat(neo.estimated_diameter.kilometers.estimated_diameter_max) * scaleFactor;
-        const diameterMedian = (diameterMin + diameterMax) / 2;
-
-        // Create a Three.js scene, camera, and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(
-            60,
-            container.clientWidth / container.clientHeight,
-            0.1,
-            10000
+        state.data = await response.json();
+        state.neos = [...(state.data.neos || [])];
+        state.referenceObjects = new Map(
+            (state.data.reference_objects || [])
+                .filter(reference => ALLOWED_REFERENCE_IDS.has(reference.id))
+                .map(reference => [reference.id, reference])
         );
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
 
-        // Store them so we can dispose later
-        scenes[neo.neo_id] = scene;
-        cameras[neo.neo_id] = camera;
-        renderers[neo.neo_id] = renderer;
-
-        // Reference shape (Statue of Liberty)
-        const geometryReference = new THREE.BoxGeometry(
-            fixedReferenceHeight / 2,
-            fixedReferenceHeight,
-            fixedReferenceHeight / 2
-        );
-        const materialReference = new THREE.MeshBasicMaterial({
-            color: 0x1a73e8,
-            wireframe: true
-        });
-        const referenceShape = new THREE.Mesh(geometryReference, materialReference);
-
-        // Asteroid-like shape (NEO)
-        const radius = diameterMedian / 2;
-        const detail = 2;
-        const neoGeometry = new THREE.IcosahedronGeometry(radius, detail);
-
-        // Displace vertices for roughness
-        const displacement = 0.1 * radius;
-        const vertices = neoGeometry.attributes.position.array;
-        for (let i = 0; i < vertices.length; i += 3) {
-            const x = vertices[i];
-            const y = vertices[i + 1];
-            const z = vertices[i + 2];
-            const offset = (Math.random() - 0.5) * 2 * displacement;
-            vertices[i] += (x / radius) * offset;
-            vertices[i + 1] += (y / radius) * offset;
-            vertices[i + 2] += (z / radius) * offset;
-        }
-        neoGeometry.computeVertexNormals();
-
-        const materialNeo = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-        const neoShape = new THREE.Mesh(neoGeometry, materialNeo);
-
-        // Position them in the scene
-        const spacing = radius + fixedReferenceHeight / 2 + 15;
-        referenceShape.position.set(-spacing, 0, 0);
-        neoShape.position.set(spacing, 0, 0);
-
-        scene.add(referenceShape);
-        scene.add(neoShape);
-
-        // Position camera
-        camera.position.z = Math.max(200, 3 * spacing);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-        // Animate
-        function animate() {
-            requestAnimationFrame(animate);
-            referenceShape.rotation.y += 0.01;
-            neoShape.rotation.x += 0.005;
-            neoShape.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-        animate();
+        renderSummary(state.data);
+        renderSortControls(state.data.sort_options || []);
+        renderCards(sortNeos(state.neos, state.activeSortId));
+        hideStatus();
+    } catch (error) {
+        showStatus(`Unable to load NEO data. ${error.message}`);
     }
+}
 
-    // Handle window resizing for any visible scenes
-    window.addEventListener('resize', () => {
-        // Resize each active scene
-        neoData.forEach(neo => {
-            const container = document.getElementById(`visual-${neo.neo_id}`);
-            const scene = scenes[neo.neo_id];
-            const camera = cameras[neo.neo_id];
-            const renderer = renderers[neo.neo_id];
-            if (container && scene && camera && renderer) {
-                // Update size
-                renderer.setPixelRatio(window.devicePixelRatio);
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-            }
+function getUtcDate(date) {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function renderSummary(data) {
+    const summary = data.summary || {};
+
+    setText('windowRange', `${formatDate(data.window_start_date)} - ${formatDate(data.window_end_date)}`);
+    setText('returnedCount', `${summary.returned_count || data.neos?.length || 0} of ${summary.candidate_count || '--'}`);
+    setText('largestNeo', summary.largest_neo_name || '--');
+    setText('closestNeo', summary.closest_neo_name || '--');
+}
+
+function renderSortControls(sortOptions) {
+    const container = document.getElementById('sortControls');
+    container.innerHTML = '';
+
+    sortOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'sort-button';
+        button.textContent = option.label;
+        button.dataset.sortId = option.id;
+        button.setAttribute('aria-pressed', option.id === state.activeSortId ? 'true' : 'false');
+
+        if (option.id === state.activeSortId) {
+            button.classList.add('active');
+        }
+
+        button.addEventListener('click', () => {
+            state.activeSortId = option.id;
+            updateActiveSortButton();
+            renderCards(sortNeos(state.neos, state.activeSortId));
+        });
+
+        container.appendChild(button);
+    });
+}
+
+function updateActiveSortButton() {
+    document.querySelectorAll('.sort-button').forEach(button => {
+        const isActive = button.dataset.sortId === state.activeSortId;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function sortNeos(neos, sortId) {
+    const sortOption = (state.data?.sort_options || []).find(option => option.id === sortId);
+    if (!sortOption) return neos;
+
+    return [...neos].sort((a, b) => {
+        const aValue = getValueByPath(a, sortOption.field);
+        const bValue = getValueByPath(b, sortOption.field);
+
+        if (typeof aValue === 'boolean' || typeof bValue === 'boolean') {
+            return sortOption.direction === 'asc'
+                ? Number(aValue) - Number(bValue)
+                : Number(bValue) - Number(aValue);
+        }
+
+        const aNumber = Number(aValue);
+        const bNumber = Number(bValue);
+
+        if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) {
+            return sortOption.direction === 'asc' ? aNumber - bNumber : bNumber - aNumber;
+        }
+
+        return String(aValue).localeCompare(String(bValue));
+    });
+}
+
+function renderCards(neos) {
+    const grid = document.getElementById('neoGrid');
+    grid.innerHTML = '';
+
+    neos.forEach(neo => {
+        grid.appendChild(createNeoCard(neo));
+    });
+}
+
+function createNeoCard(neo) {
+    const card = document.createElement('article');
+    card.className = 'neo-card';
+
+    const visualization = neo.visualization || {};
+    const metrics = neo.metrics || {};
+    const ranking = neo.ranking || {};
+    const approach = neo.close_approach || {};
+    const comparison = getDisplayComparison(neo);
+    const visualVars = getVisualVariables(neo, comparison);
+
+    card.style.setProperty('--asteroid-size', `${visualVars.asteroidSize}px`);
+    card.style.setProperty('--reference-size', `${visualVars.referenceSize}px`);
+    card.style.setProperty('--blob-radius', visualVars.blobRadius);
+    card.style.setProperty('--spin-speed', `${visualVars.spinSpeed}s`);
+    card.style.setProperty('--spin-delay', `${visualVars.spinDelay}s`);
+    card.style.setProperty('--float-speed', `${visualVars.floatSpeed}s`);
+    card.style.setProperty('--float-delay', `${visualVars.floatDelay}s`);
+    card.style.setProperty('--asteroid-hue', `${visualVars.hue}deg`);
+    card.style.setProperty('--asteroid-saturation', `${visualVars.saturation}%`);
+    card.style.setProperty('--asteroid-lightness', `${visualVars.lightness}%`);
+    card.style.setProperty('--asteroid-highlight-x', `${visualVars.highlightX}%`);
+    card.style.setProperty('--asteroid-highlight-y', `${visualVars.highlightY}%`);
+    card.style.setProperty('--crater-one-x', `${visualVars.craterOneX}%`);
+    card.style.setProperty('--crater-one-y', `${visualVars.craterOneY}%`);
+    card.style.setProperty('--crater-two-x', `${visualVars.craterTwoX}%`);
+    card.style.setProperty('--crater-two-y', `${visualVars.craterTwoY}%`);
+    card.style.setProperty('--crater-three-x', `${visualVars.craterThreeX}%`);
+    card.style.setProperty('--crater-three-y', `${visualVars.craterThreeY}%`);
+    card.style.setProperty('--asteroid-scale-x', visualVars.scaleX);
+    card.style.setProperty('--asteroid-scale-y', visualVars.scaleY);
+    card.style.setProperty('--asteroid-tilt', `${visualVars.tilt}deg`);
+
+    card.innerHTML = `
+        <div class="visual-panel" aria-hidden="true">
+            <div class="asteroid-wrap">
+                <div class="asteroid"></div>
+            </div>
+            <div class="reference-marker">
+                <div class="reference-scale-line"></div>
+                <div class="reference-object reference-${escapeAttribute(comparison.category)} reference-${escapeAttribute(comparison.id)} ${comparison.ratio > 40 ? 'reference-tiny' : ''}" title="${escapeAttribute(comparison.name)}">
+                    ${createReferenceMarkup(comparison)}
+                </div>
+            </div>
+        </div>
+        <div class="neo-content">
+            <div class="card-topline">
+                <span class="rank-pill">#${ranking.visual_interest_rank || '--'} Interesting</span>
+                ${metrics.is_hazardous ? '<span class="hazard-pill">Potentially hazardous</span>' : ''}
+            </div>
+            <h3>${escapeHtml(neo.name || 'Unnamed NEO')}</h3>
+            <div class="reference-select-label">
+                Compare against
+                <div class="reference-picker">
+                    <button class="reference-picker-button" type="button" aria-expanded="false">
+                        <span>${escapeHtml(comparison.name)}</span>
+                    </button>
+                    <div class="reference-picker-menu" role="listbox">
+                        ${createReferenceOptions(comparison.id)}
+                    </div>
+                </div>
+            </div>
+            <p class="comparison-label">${escapeHtml(comparison.label)}</p>
+            <div class="metric-grid">
+                ${metricMarkup('Avg Diameter', `${formatNumber(metrics.diameter_avg_m)} m`)}
+                ${metricMarkup('Closest Pass', `${formatNumber(metrics.miss_distance_lunar)} lunar`)}
+                ${metricMarkup('Speed', `${formatNumber(metrics.velocity_kph)} km/h`)}
+                ${metricMarkup('Approach', formatApproach(approach))}
+            </div>
+            <div class="neo-footer">
+                <span>#${ranking.size_rank || '--'} largest</span>
+                <span>#${ranking.closest_rank || '--'} closest</span>
+                <span>#${ranking.fastest_rank || '--'} fastest</span>
+                <a href="${escapeAttribute(neo.nasa_jpl_url || '#')}" target="_blank" rel="noreferrer">NASA JPL</a>
+            </div>
+        </div>
+    `;
+
+    setupReferencePicker(card, neo);
+
+    return card;
+}
+
+function metricMarkup(label, value) {
+    return `
+        <div class="metric">
+            <span class="meta-label">${escapeHtml(label)}</span>
+            <strong>${escapeHtml(value)}</strong>
+        </div>
+    `;
+}
+
+function updateCardComparison(card, neo, referenceId) {
+    const comparison = getDisplayComparison(neo, referenceId);
+    const visualVars = getVisualVariables(neo, comparison);
+    const referenceObject = card.querySelector('.reference-object');
+
+    card.style.setProperty('--asteroid-size', `${visualVars.asteroidSize}px`);
+    card.style.setProperty('--reference-size', `${visualVars.referenceSize}px`);
+    card.querySelector('.comparison-label').textContent = comparison.label;
+
+    referenceObject.className = `reference-object reference-${comparison.category} reference-${comparison.id} ${comparison.ratio > 40 ? 'reference-tiny' : ''}`;
+    referenceObject.title = comparison.name;
+    referenceObject.innerHTML = createReferenceMarkup(comparison);
+    card.querySelector('.reference-picker-button span').textContent = comparison.name;
+
+    card.querySelectorAll('.reference-picker-option').forEach(option => {
+        option.classList.toggle('active', option.dataset.referenceId === comparison.id);
+        option.setAttribute('aria-selected', option.dataset.referenceId === comparison.id ? 'true' : 'false');
+    });
+}
+
+function createReferenceOptions(selectedReferenceId) {
+    return [...state.referenceObjects.values()].map(reference => `
+        <button class="reference-picker-option ${reference.id === selectedReferenceId ? 'active' : ''}" type="button" role="option" aria-selected="${reference.id === selectedReferenceId ? 'true' : 'false'}" data-reference-id="${escapeAttribute(reference.id)}">
+            ${escapeHtml(reference.name)}
+        </button>
+    `).join('');
+}
+
+function setupReferencePicker(card, neo) {
+    const picker = card.querySelector('.reference-picker');
+    const button = card.querySelector('.reference-picker-button');
+    const options = card.querySelectorAll('.reference-picker-option');
+
+    button.addEventListener('click', event => {
+        event.stopPropagation();
+        const isOpen = picker.classList.toggle('open');
+        button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    options.forEach(option => {
+        option.addEventListener('click', event => {
+            event.stopPropagation();
+            updateCardComparison(card, neo, option.dataset.referenceId);
+            picker.classList.remove('open');
+            button.setAttribute('aria-expanded', 'false');
         });
     });
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.reference-picker.open').forEach(picker => {
+        picker.classList.remove('open');
+        picker.querySelector('.reference-picker-button').setAttribute('aria-expanded', 'false');
+    });
 });
+
+function getDisplayComparison(neo, selectedReferenceId) {
+    const visualization = neo.visualization || {};
+    const metrics = neo.metrics || {};
+    const preferredReferenceId = selectedReferenceId || visualization.closest_reference_id || visualization.primary_reference_id;
+    const referenceId = state.referenceObjects.has(preferredReferenceId)
+        ? preferredReferenceId
+        : state.referenceObjects.keys().next().value;
+    const ratio = (visualization.comparison_ratios || []).find(comparison => comparison.reference_id === referenceId);
+    const reference = state.referenceObjects.get(referenceId) || {
+        id: referenceId,
+        name: visualization.closest_reference_name || visualization.primary_reference_name || 'reference object',
+        category: 'landmark'
+    };
+    const diameter = Number(metrics.diameter_avg_m || visualization.diameter_avg_m || 0);
+    const referenceSize = Number(reference.height_m || ratio?.reference_height_m || 0);
+    const neoToReferenceRatio = referenceSize > 0 && diameter > 0
+        ? diameter / referenceSize
+        : Number(ratio?.neo_to_reference_ratio ?? visualization.primary_reference_ratio ?? 1);
+    const measurement = measurementWord(reference.category);
+
+    return {
+        id: reference.id,
+        name: reference.name,
+        category: normalizeCategory(reference.category),
+        ratio: neoToReferenceRatio,
+        label: `About ${formatRatio(neoToReferenceRatio)}x the ${measurement} of ${referencePhrase(reference)}`
+    };
+}
+
+function createReferenceShapeMarkup(category) {
+    if (category === 'person') {
+        return '<span class="reference-head"></span><span class="reference-torso"></span><span class="reference-base"></span>';
+    }
+
+    if (category === 'mountain') {
+        return '<span class="mountain-silhouette"></span>';
+    }
+
+    return '<span class="landmark-silhouette"></span>';
+}
+
+function createReferenceMarkup(comparison) {
+    const assetPath = REFERENCE_ASSETS[comparison.id];
+
+    if (assetPath) {
+        return `<img class="reference-image" src="${escapeAttribute(assetPath)}" alt="">`;
+    }
+
+    if (comparison.id === 'statue_of_liberty') {
+        return `
+            <svg class="reference-svg reference-svg-statue" viewBox="0 0 72 160" aria-hidden="true" focusable="false">
+                <path d="M20 142h34v18H20z" />
+                <path d="M26 124h22v18H26z" />
+                <path d="M31 47h15l8 77H22z" />
+                <path d="M34 34h10v13H34z" />
+                <path d="M39 22l3 9 9-5-5 9 10 3-11 2-2 9-5-8-10 7 5-11-9-4 10-2z" />
+                <path d="M31 49l-9 39 9 5 9-37z" />
+                <path d="M43 48l13 33 8-7-15-29z" />
+                <path d="M23 17l-7 2 13 35 7-3z" />
+                <path d="M12 13h17v6H12z" />
+                <path d="M15 8h11l-2 5h-7z" />
+                <path d="M20 0c6 6 6 11 1 17-6-5-6-10-1-17z" />
+            </svg>
+        `;
+    }
+
+    return createReferenceShapeMarkup(comparison.category);
+}
+
+function getVisualVariables(neo, comparison) {
+    const metrics = neo.metrics || {};
+    const visualization = neo.visualization || {};
+    const diameter = Number(metrics.diameter_avg_m || visualization.diameter_avg_m || 50);
+    const ratio = Number.isFinite(Number(comparison.ratio)) ? Number(comparison.ratio) : 1;
+    const seed = seedFromString(visualization.asteroid_shape_seed || neo.neo_id || neo.name || 'neo');
+    const referenceMeters = diameter / Math.max(ratio, 0.01);
+    const largestMeters = Math.max(diameter, referenceMeters);
+    const sceneMaxPx = 220;
+    const sceneMinPx = 8;
+
+    return {
+        asteroidSize: clamp((diameter / largestMeters) * sceneMaxPx, sceneMinPx, sceneMaxPx),
+        referenceSize: clamp((referenceMeters / largestMeters) * sceneMaxPx, sceneMinPx, sceneMaxPx),
+        blobRadius: `${35 + (seed % 28)}% ${65 - (seed % 24)}% ${38 + ((seed * 3) % 28)}% ${62 - ((seed * 5) % 24)}%`,
+        spinSpeed: 5 + (seed % 19),
+        spinDelay: -1 * (seed % 11),
+        floatSpeed: 3.8 + ((seed % 18) / 10),
+        floatDelay: -1 * ((seed % 13) / 3),
+        hue: 24 + (seed % 22),
+        saturation: 17 + (seed % 15),
+        lightness: 42 + (seed % 11),
+        highlightX: 24 + (seed % 45),
+        highlightY: 18 + ((seed * 7) % 38),
+        craterOneX: 18 + ((seed * 5) % 56),
+        craterOneY: 18 + ((seed * 11) % 54),
+        craterTwoX: 22 + ((seed * 13) % 52),
+        craterTwoY: 26 + ((seed * 17) % 48),
+        craterThreeX: 28 + ((seed * 19) % 46),
+        craterThreeY: 32 + ((seed * 23) % 42),
+        scaleX: (0.88 + ((seed % 17) / 100)).toFixed(2),
+        scaleY: (0.9 + (((seed * 3) % 16) / 100)).toFixed(2),
+        tilt: -10 + (seed % 21)
+    };
+}
+
+function measurementWord(category) {
+    return 'height';
+}
+
+function normalizeCategory(category = '') {
+    if (category === 'person') return 'person';
+    if (category === 'mountain') return 'mountain';
+    return 'landmark';
+}
+
+function referencePhrase(reference) {
+    if (reference.category === 'landmark') {
+        return `the ${reference.name}`;
+    }
+
+    if (reference.category === 'mountain') {
+        return reference.name;
+    }
+
+    const name = lowercaseFirst(reference.name || 'reference object');
+    const article = startsWithVowelSound(name) ? 'an' : 'a';
+    return `${article} ${name}`;
+}
+
+function lowercaseFirst(value) {
+    return value.charAt(0).toLowerCase() + value.slice(1);
+}
+
+function startsWithVowelSound(value = '') {
+    return /^[aeiou]/i.test(value.trim());
+}
+
+function formatRatio(value) {
+    if (!Number.isFinite(value)) return '--';
+    if (value > 0 && value < 0.01) {
+        return '<0.01';
+    }
+
+    return new Intl.NumberFormat('en', { maximumFractionDigits: value >= 10 ? 0 : 2 }).format(value);
+}
+
+function seedFromString(value) {
+    return String(value).split('').reduce((hash, char) => hash + char.charCodeAt(0), 0);
+}
+
+function getValueByPath(object, path) {
+    return path.split('.').reduce((value, key) => value?.[key], object);
+}
+
+function formatDate(value) {
+    if (!value) return '--';
+    const date = new Date(`${value}T00:00:00Z`);
+    return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(date);
+}
+
+function formatApproach(approach) {
+    if (!approach.date) return '--';
+    const days = Number(approach.days_until);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    return `${formatDate(approach.date)} (${days} days)`;
+}
+
+function formatNumber(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return '--';
+    return new Intl.NumberFormat('en', { maximumFractionDigits: number >= 100 ? 0 : 1 }).format(number);
+}
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+function setText(id, value) {
+    document.getElementById(id).textContent = value;
+}
+
+function hideStatus() {
+    document.getElementById('statusMessage').classList.add('hidden');
+}
+
+function showStatus(message) {
+    const status = document.getElementById('statusMessage');
+    status.innerHTML = escapeHtml(message);
+    status.classList.remove('hidden');
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value);
+}

@@ -20,30 +20,6 @@ REFERENCE_OBJECTS = [
         'category': 'person'
     },
     {
-        'id': 'african_elephant',
-        'name': 'African elephant',
-        'height_m': Decimal('3.3'),
-        'category': 'animal'
-    },
-    {
-        'id': 'school_bus',
-        'name': 'School bus',
-        'height_m': Decimal('10.67'),
-        'category': 'vehicle_length'
-    },
-    {
-        'id': 'blue_whale',
-        'name': 'Blue whale',
-        'height_m': Decimal('24'),
-        'category': 'animal_length'
-    },
-    {
-        'id': 'boeing_747',
-        'name': 'Boeing 747',
-        'height_m': Decimal('70.6'),
-        'category': 'aircraft_length'
-    },
-    {
         'id': 'statue_of_liberty',
         'name': 'Statue of Liberty',
         'height_m': Decimal('93'),
