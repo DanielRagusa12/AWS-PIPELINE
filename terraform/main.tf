@@ -144,7 +144,8 @@ resource "aws_iam_role_policy" "daily_fetch_permissions" {
 data "aws_iam_policy_document" "api_permissions" {
   statement {
     actions = [
-      "dynamodb:GetItem"
+      "dynamodb:GetItem",
+      "dynamodb:Scan"
     ]
 
     resources = [aws_dynamodb_table.neo_daily_data.arn]
