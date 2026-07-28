@@ -325,6 +325,67 @@ a {
     transform: translateZ(0);
 }
 
+.reference-person:not(.reference-tiny) {
+    display: block;
+    width: clamp(14px, calc(var(--reference-size) * 0.28), 34px);
+}
+
+.reference-person:not(.reference-tiny) .reference-head,
+.reference-person:not(.reference-tiny) .reference-torso,
+.reference-person:not(.reference-tiny) .reference-base {
+    position: absolute;
+    display: block;
+    left: 50%;
+    background: linear-gradient(180deg, #d9cfad 0%, #b7a775 52%, rgba(118, 103, 66, 0.9) 100%);
+    transform: translateX(-50%);
+}
+
+.reference-person:not(.reference-tiny) .reference-head {
+    top: 0;
+    width: 42%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+
+.reference-person:not(.reference-tiny) .reference-torso {
+    top: 27%;
+    width: 54%;
+    height: 50%;
+    border-radius: 999px 999px 5px 5px;
+}
+
+.reference-person:not(.reference-tiny) .reference-torso::before,
+.reference-person:not(.reference-tiny) .reference-torso::after {
+    position: absolute;
+    top: 8%;
+    display: block;
+    width: 32%;
+    height: 72%;
+    content: "";
+    border-radius: 999px;
+    background: inherit;
+}
+
+.reference-person:not(.reference-tiny) .reference-torso::before {
+    left: -24%;
+    transform: rotate(8deg);
+}
+
+.reference-person:not(.reference-tiny) .reference-torso::after {
+    right: -24%;
+    transform: rotate(-8deg);
+}
+
+.reference-person:not(.reference-tiny) .reference-base {
+    bottom: 0;
+    width: 62%;
+    height: 26%;
+    border-radius: 0;
+    background:
+        linear-gradient(90deg, transparent 0 18%, #b7a775 18% 42%, transparent 42% 58%, #b7a775 58% 82%, transparent 82% 100%);
+}
+
 .reference-tiny {
     width: 18px;
 }
@@ -382,6 +443,10 @@ a {
 
 .reference-svg-statue {
     min-width: 34px;
+}
+
+.reference-svg-human {
+    max-width: 34px;
 }
 
 .building-spire,

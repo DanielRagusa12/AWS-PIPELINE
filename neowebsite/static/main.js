@@ -342,6 +342,15 @@ function createReferenceMarkup(comparison) {
         `;
     }
 
+    if (comparison.id === 'average_human') {
+        return `
+            <svg class="reference-svg reference-svg-human" viewBox="0 0 44 120" aria-hidden="true" focusable="false">
+                <path d="M22 2c8 0 14 6 14 14s-6 14-14 14S8 24 8 16 14 2 22 2z" />
+                <path d="M18 28h8c8 0 14 7 14 16v37h-9V45h-3v73h-9V45h-3v36H7V44c0-9 5-16 11-16z" />
+            </svg>
+        `;
+    }
+
     return createReferenceShapeMarkup(comparison.category);
 }
 
