@@ -314,6 +314,7 @@ a {
 }
 
 .reference-object {
+    --reference-right-compensation: 0%;
     position: relative;
     display: grid;
     justify-items: center;
@@ -326,8 +327,23 @@ a {
 }
 
 .reference-person:not(.reference-tiny) {
+    --reference-right-compensation: 9.1%;
     display: block;
-    width: clamp(14px, calc(var(--reference-size) * 0.28), 34px);
+    width: clamp(14px, calc(var(--reference-size) * 0.37), 70px);
+}
+
+.reference-eiffel_tower:not(.reference-tiny) {
+    --reference-right-compensation: 16%;
+    width: clamp(62px, calc(var(--reference-size) * 0.45), 100px);
+}
+
+.reference-burj_khalifa:not(.reference-tiny) {
+    --reference-right-compensation: 16%;
+    width: clamp(46px, calc(var(--reference-size) * 0.3), 76px);
+}
+
+.reference-mountain:not(.reference-tiny) {
+    width: clamp(76px, calc(var(--reference-size) * 0.55), 120px);
 }
 
 .reference-person:not(.reference-tiny) .reference-head,
@@ -387,6 +403,7 @@ a {
 }
 
 .reference-tiny {
+    justify-items: end;
     width: 18px;
 }
 
@@ -406,7 +423,10 @@ a {
 .reference-tiny .reference-base,
 .reference-tiny .reference-head,
 .reference-tiny .reference-torso,
-.reference-tiny .reference-image {
+.reference-tiny .reference-image,
+.reference-tiny .reference-svg,
+.reference-tiny .landmark-silhouette,
+.reference-tiny .mountain-silhouette {
     display: none;
 }
 
@@ -439,14 +459,18 @@ a {
     color: var(--paper);
     fill: currentColor;
     filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.35));
+    transform: translateX(var(--reference-right-compensation));
 }
 
 .reference-svg-statue {
+    width: 100%;
     min-width: 34px;
+    max-width: none;
 }
 
 .reference-svg-human {
-    max-width: 34px;
+    width: 100%;
+    max-width: none;
 }
 
 .building-spire,
@@ -472,6 +496,7 @@ a {
     height: 100%;
     background: linear-gradient(180deg, #d9cfad 0%, #b7a775 52%, rgba(118, 103, 66, 0.9) 100%);
     filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.32));
+    transform: translateX(var(--reference-right-compensation));
 }
 
 .landmark-silhouette::before,
@@ -482,8 +507,9 @@ a {
     background: inherit;
 }
 
-.reference-statue_of_liberty {
-    width: 56px;
+.reference-statue_of_liberty:not(.reference-tiny) {
+    --reference-right-compensation: 11.1%;
+    width: clamp(56px, calc(var(--reference-size) * 0.45), 100px);
 }
 
 .statue-arm,
@@ -590,7 +616,7 @@ a {
 }
 
 .reference-eiffel_tower .landmark-silhouette {
-    width: 62px;
+    width: 100%;
     clip-path: polygon(
         48% 0,
         52% 0,
@@ -626,7 +652,7 @@ a {
 }
 
 .reference-burj_khalifa .landmark-silhouette {
-    width: 46px;
+    width: 100%;
     clip-path: polygon(
         50% 0,
         56% 8%,
@@ -653,7 +679,7 @@ a {
 }
 
 .reference-mountain .mountain-silhouette {
-    width: 76px;
+    width: 100%;
     clip-path: polygon(
         50% 0,
         62% 32%,
