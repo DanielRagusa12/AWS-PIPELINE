@@ -8,6 +8,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 NASA_API_KEY = os.getenv('NASA_API_KEY')
 RAW_DATA_BUCKET_NAME = os.getenv('RAW_DATA_BUCKET_NAME', 'neopipeline-raw-data')
+WEBSITE_BUCKET_NAME = os.getenv('WEBSITE_BUCKET_NAME')
+PUBLIC_DATA_KEY = os.getenv('PUBLIC_DATA_KEY', 'data/latest.json')
 DYNAMODB_TABLE_NAME = os.getenv('DYNAMODB_TABLE_NAME', 'NEODailyData')
 FEED_WINDOW_DAYS = int(os.getenv('FEED_WINDOW_DAYS', '7'))
 MAX_RETURNED_NEOS = int(os.getenv('MAX_RETURNED_NEOS', '50'))
@@ -60,6 +62,18 @@ def upload_to_s3(data, bucket_name, s3):
     s3.Object(bucket_name, filename).put(Body=data_json)
     print(f"Uploaded {filename} to S3 bucket {bucket_name}.")
     return filename
+
+def publish_latest_data(data, bucket_name, object_key, s3):
+    if not bucket_name:
+        raise ValueError('WEBSITE_BUCKET_NAME is required')
+
+    data_json = json.dumps(data, default=str, separators=(',', ':'))
+    s3.Object(bucket_name, object_key).put(
+        Body=data_json,
+        ContentType='application/json; charset=utf-8',
+        CacheControl='public,max-age=300'
+    )
+    print(f"Published latest frontend data to s3://{bucket_name}/{object_key}.")
 
 def fetch_nasa_data():
     start_date = date.today()
@@ -356,5 +370,9 @@ def lambda_handler(event, context):
     table = dynamodb.Table(DYNAMODB_TABLE_NAME)
     table.put_item(Item=aggregated_data)
     print(f"Inserted NEO data for date {fetch_date}")
+
+    # Publish only after the processed history write succeeds. S3 PutObject is
+    # atomic, so a failed run leaves the previous successful dataset available.
+    publish_latest_data(aggregated_data, WEBSITE_BUCKET_NAME, PUBLIC_DATA_KEY, s3)
 
     return {"statusCode": 200, "body": json.dumps("Success")}

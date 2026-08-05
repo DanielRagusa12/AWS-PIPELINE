@@ -22,6 +22,18 @@ variable "raw_data_bucket_name" {
   default     = "neo-pipeline-raw-data-bucket"
 }
 
+variable "website_bucket_name" {
+  description = "Globally unique private S3 bucket name for the CloudFront website. Defaults to a project/account-specific name when null."
+  type        = string
+  default     = null
+}
+
+variable "public_data_key" {
+  description = "Object key used by the daily Lambda to publish the latest curated frontend dataset."
+  type        = string
+  default     = "data/latest.json"
+}
+
 variable "dynamodb_table_name" {
   description = "DynamoDB table name for processed NEO data."
   type        = string
@@ -56,4 +68,17 @@ variable "lambda_runtime" {
   description = "Python Lambda runtime."
   type        = string
   default     = "python3.12"
+}
+
+variable "budget_alert_email" {
+  description = "Email address that receives AWS Budget notifications. Supply through TF_VAR_budget_alert_email; do not commit a real value."
+  type        = string
+  sensitive   = true
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.budget_alert_email == null || can(regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", var.budget_alert_email))
+    error_message = "budget_alert_email must be a valid email address."
+  }
 }

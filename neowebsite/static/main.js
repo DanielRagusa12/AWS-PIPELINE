@@ -1,4 +1,4 @@
-const API_URL = 'https://kw0uic6dhe.execute-api.us-east-2.amazonaws.com/get-neo-data';
+const DATA_URL = '/data/latest.json';
 
 const REFERENCE_ASSETS = {};
 const ALLOWED_REFERENCE_IDS = new Set([
@@ -20,11 +20,10 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
     try {
-        const fetchDate = getUtcDate(new Date());
-        const response = await fetch(`${API_URL}?fetch_date=${fetchDate}`);
+        const response = await fetch(DATA_URL);
 
         if (!response.ok) {
-            throw new Error(`API returned ${response.status}`);
+            throw new Error(`Data endpoint returned ${response.status}`);
         }
 
         state.data = await response.json();
@@ -42,13 +41,6 @@ async function init() {
     } catch (error) {
         showStatus(`Unable to load NEO data. ${error.message}`);
     }
-}
-
-function getUtcDate(date) {
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
 }
 
 function renderSummary(data) {
