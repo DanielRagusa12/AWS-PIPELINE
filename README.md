@@ -81,6 +81,3 @@ Managed resources include:
 - EventBridge daily schedule
 - CloudWatch log groups with bounded retention
 - IAM roles and policies for Lambda, DynamoDB, S3, EventBridge, and CloudFront access
-- Optional monthly AWS Budget notifications when a notification address is provided
-
-The CloudFront Free flat-rate plan and its AWS WAF association are enabled on the distribution. The default AWS region for regional resources is `us-east-2`.
