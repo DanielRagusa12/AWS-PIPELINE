@@ -71,7 +71,7 @@ variable "lambda_runtime" {
 }
 
 variable "budget_alert_email" {
-  description = "Email address that receives AWS Budget notifications. Supply through TF_VAR_budget_alert_email; do not commit a real value."
+  description = "Email address that receives AWS Budget notifications."
   type        = string
   sensitive   = true
   default     = null

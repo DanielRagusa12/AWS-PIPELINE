@@ -1,6 +1,13 @@
 locals {
   website_root  = "${path.module}/../neowebsite/static"
   website_files = fileset(local.website_root, "**")
+  website_allowed_paths = sort(distinct(concat(
+    ["/", "/${var.public_data_key}"],
+    [for file in local.website_files : "/${file}"]
+  )))
+  website_allowed_path_map = {
+    for path in local.website_allowed_paths : path => true
+  }
   website_content_types = {
     css         = "text/css; charset=utf-8"
     html        = "text/html; charset=utf-8"
@@ -47,12 +54,64 @@ resource "aws_s3_bucket_versioning" "website" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "website" {
+  bucket = aws_s3_bucket.website.id
+
+  rule {
+    id     = "expire-noncurrent-website-objects"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.website]
+}
+
 resource "aws_cloudfront_origin_access_control" "website" {
   name                              = "${var.project_name}-website-oac"
   description                       = "Restricts the private website bucket to CloudFront."
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_function" "website_path_guard" {
+  name    = "${var.project_name}-website-path-guard"
+  runtime = "cloudfront-js-2.0"
+  comment = "Blocks requests for paths that are not part of the static website."
+  publish = true
+  code    = <<-EOT
+function handler(event) {
+    var request = event.request;
+    var allowedPaths = ${jsonencode(local.website_allowed_path_map)};
+
+    if (allowedPaths[request.uri] === true) {
+        return request;
+    }
+
+    return {
+        statusCode: 404,
+        statusDescription: 'Not Found',
+        headers: {
+            'cache-control': { value: 'no-store' },
+            'content-type': { value: 'text/plain; charset=utf-8' },
+            'x-neo-edge-block': { value: 'path-not-allowed' }
+        },
+        body: 'Not Found'
+    };
+}
+EOT
+}
+
+import {
+  to = aws_cloudfront_function.website_path_guard
+  id = "neo-pipeline-website-path-guard"
 }
 
 resource "aws_cloudfront_distribution" "website" {
@@ -75,7 +134,7 @@ resource "aws_cloudfront_distribution" "website" {
   }
 
   default_cache_behavior {
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    allowed_methods = ["GET", "HEAD"]
     cached_methods  = ["GET", "HEAD"]
     # AWS-managed CachingOptimized policy. Flat-rate plans do not accept
     # customer-managed cache policies; object Cache-Control metadata still
@@ -84,6 +143,11 @@ resource "aws_cloudfront_distribution" "website" {
     compress               = true
     target_origin_id       = "website-s3-origin"
     viewer_protocol_policy = "redirect-to-https"
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.website_path_guard.arn
+    }
   }
 
   restrictions {

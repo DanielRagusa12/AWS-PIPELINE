@@ -183,6 +183,11 @@ resource "aws_cloudwatch_event_target" "daily_fetch" {
   rule      = aws_cloudwatch_event_rule.daily_fetch.name
   target_id = local.daily_fetch_function_name
   arn       = aws_lambda_function.daily_fetch.arn
+
+  retry_policy {
+    maximum_event_age_in_seconds = 3600
+    maximum_retry_attempts       = 1
+  }
 }
 
 resource "aws_lambda_permission" "allow_eventbridge_daily_fetch" {
